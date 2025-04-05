@@ -6,6 +6,7 @@ import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
+import Cookies from 'js-cookie'; // Necesitas instalar este paquete
 
 // Claves para almacenamiento - Exactamente las mismas que en el middleware
 const TOKEN_KEY = '@creditoya:token';
@@ -29,9 +30,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Configurar interceptor para todos los requests
     useEffect(() => {
-        // Interceptor para agregar el token desde localStorage a todas las peticiones
+        // Interceptor para agregar el token desde la cookie a todas las peticiones
         const interceptorId = axios.interceptors.request.use(config => {
-            const token = localStorage.getItem(TOKEN_KEY);
+            const token = Cookies.get(TOKEN_KEY);
             if (token) {
                 config.headers['Authorization'] = `Bearer ${token}`;
             }
@@ -44,13 +45,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
     }, []);
 
-    // Inicializar desde localStorage
+    // Inicializar desde las cookies
     useEffect(() => {
         const loadStoredAuth = () => {
             try {
-                // Intentar obtener el token del localStorage
-                const token = localStorage.getItem(TOKEN_KEY);
-                const user = JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+                // Obtener el token de la cookie del cliente
+                const token = Cookies.get(TOKEN_KEY);
+                const userStr = localStorage.getItem(USER_KEY);
+                const user = userStr ? JSON.parse(userStr) : null;
 
                 if (token && user) {
                     // Verificar si el token es válido
@@ -97,8 +99,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 throw new Error('Credenciales inválidas');
             }
 
-            // Guardar en localStorage
-            localStorage.setItem(TOKEN_KEY, accessToken);
+            // Guardar en cookie y localStorage
+            Cookies.set(TOKEN_KEY, accessToken, { 
+                path: '/',
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                expires: 1 // 1 día, ajusta según sea necesario
+            });
             localStorage.setItem(USER_KEY, JSON.stringify(user));
 
             setAuthState({
@@ -126,8 +133,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = () => {
-        // Limpiar localStorage
-        localStorage.removeItem(TOKEN_KEY);
+        // Limpiar cookie y localStorage
+        Cookies.remove(TOKEN_KEY, { path: '/' });
         localStorage.removeItem(USER_KEY);
 
         // Resetear estado

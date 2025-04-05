@@ -8,57 +8,58 @@ const TOKEN_KEY = '@creditoya:token';
 
 export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname;
-    
+    console.log(`Middleware verificando ruta: ${pathname}`);
+
     // Si es una ruta pública o login, permitir acceso
     if (pathname === '/' || pathname === '/login' || pathname.startsWith('/auth/')) {
+        console.log('Middleware: Ruta pública, permitiendo acceso');
         return NextResponse.next();
     }
-    
+
     // Verificar si la ruta actual está protegida
     const isDashboardRoute = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
-    
+
     // Para rutas protegidas, verificar autenticación
     if (isDashboardRoute) {
-        // Obtener y verificar la cookie
-        const tokenCookie = request.cookies.get(TOKEN_KEY);
-        
-        // Debug: Añadir cabeceras para verificar estado de autenticación
-        const response = NextResponse.next();
-        response.headers.set('x-debug-has-cookie', tokenCookie ? 'true' : 'false');
-        
+        console.log('Middleware: Ruta protegida de dashboard detectada');
+
+        // Obtener la cookie correctamente
+        // En Next.js 15.x, debes usar request.cookies.get
+        const token = request.cookies.get(TOKEN_KEY)?.value;
+        console.log(`Middleware: Token presente: ${!!token}`);
+
         // Si no hay token, redirigir a login
-        if (!tokenCookie || !tokenCookie.value) {
-            console.log('Middleware: No token encontrado, redirigiendo a login');
-            const loginUrl = new URL('/', request.url);
-            return NextResponse.redirect(loginUrl);
+        if (!token) {
+            console.log('Middleware: No se encontró token, redirigiendo a login');
+            return NextResponse.redirect(new URL('/', request.url));
         }
-        
+
         try {
             // Verificar si el token es válido
-            const token = tokenCookie.value;
             const decoded = jwtDecode<{exp: number}>(token);
             const currentTime = Date.now() / 1000;
-            
-            response.headers.set('x-debug-token-valid', decoded.exp > currentTime ? 'true' : 'false');
-            response.headers.set('x-debug-token-expires', new Date(decoded.exp * 1000).toISOString());
-            
+
+            console.log(`Middleware: Expiración del token: ${new Date(decoded.exp * 1000).toISOString()}`);
+            console.log(`Middleware: Hora actual: ${new Date(currentTime * 1000).toISOString()}`);
+            console.log(`Middleware: Token válido: ${decoded.exp > currentTime}`);
+
             if (decoded.exp < currentTime) {
                 console.log('Middleware: Token expirado, redirigiendo a login');
-                const loginUrl = new URL('/', request.url);
-                return NextResponse.redirect(loginUrl);
+                return NextResponse.redirect(new URL('/', request.url));
             }
-            
+
             // Token válido, permitir acceso
-            return response;
+            console.log('Middleware: Token válido, permitiendo acceso al dashboard');
+            return NextResponse.next();
         } catch (error) {
             console.log('Middleware: Error al validar token', error);
             // Error al decodificar, token inválido
-            const loginUrl = new URL('/', request.url);
-            return NextResponse.redirect(loginUrl);
+            return NextResponse.redirect(new URL('/', request.url));
         }
     }
-    
+
     // Para cualquier otra ruta no especificada, permitir acceso
+    console.log('Middleware: Ruta no especificada, permitiendo acceso');
     return NextResponse.next();
 }
 

@@ -3,44 +3,64 @@
 import { useState } from "react";
 import { useAuth } from "@/context/useAuth";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Home() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const { login, isLoading, error } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Usar la función login del contexto
     const success = await login(email, password);
-    
-    // Si el login fue exitoso, redirigir al dashboard
     if (success) {
       router.push('/dashboard');
     }
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-[5%]">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md border border-gray-200">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Intranet</h1>
-          <p className="mt-2 text-sm text-gray-600">Ingresa tus credenciales para acceder</p>
-        </div>
+    <main className="flex min-h-screen bg-gray-50">
+      {/* Imagen a la izquierda */}
+      <div className="hidden md:flex w-1/2 bg-green-50 items-center justify-center">
+        <Image
+          src={"https://res.cloudinary.com/dvquomppa/image/upload/v1717654334/credito_ya/cirm9vbdngqyxymcpfad.png"}
+          alt="Logo"
+          width={180}
+          height={180}
+          priority
+          className="object-contain"
+        />
+      </div>
 
-        {error && (
-          <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded">
-            {error}
+      {/* Formulario a la derecha */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+        <div className="w-full max-w-md space-y-6">
+          {/* Logo móvil (visible solo en móvil) */}
+          <div className="md:hidden flex justify-center mb-6">
+            <Image
+              src={"https://res.cloudinary.com/dvquomppa/image/upload/v1717654334/credito_ya/cirm9vbdngqyxymcpfad.png"}
+              alt="Logo"
+              width={120}
+              height={120}
+              priority
+              className="object-contain"
+            />
           </div>
-        )}
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+
+          <h1 className="text-xl font-medium text-gray-700">Intranet</h1>
+          <p className="text-sm text-gray-500">Ingresa tus credenciales para acceder</p>
+
+          {error && (
+            <div className="p-3 text-sm bg-red-50 text-red-600 rounded-md">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-xs font-medium text-gray-600 mb-1">
                 Correo electrónico
               </label>
               <input
@@ -51,11 +71,13 @@ export default function Home() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border text-base border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
+                placeholder="nombre@empresa.com"
               />
             </div>
+
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-xs font-medium text-gray-600 mb-1">
                 Contraseña
               </label>
               <input
@@ -66,21 +88,20 @@ export default function Home() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border text-base border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
+                placeholder="••••••••"
               />
             </div>
-          </div>
-          
-          <div>
+
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              className="w-full mt-4 py-2 px-4 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 transition-colors disabled:opacity-50"
             >
               {isLoading ? "Ingresando..." : "Ingresar"}
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </main>
   );

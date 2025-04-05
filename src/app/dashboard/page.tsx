@@ -137,7 +137,7 @@ function DashboardPage() {
 
     return (
         <SidebarLayout>
-            <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
+            <div className="pt-20 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen overflow-scroll">
                 <header className="mb-8">
                     <h1 className="text-xl sm:text-2xl font-medium text-gray-800">Solicitudes Pendientes</h1>
                     <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes que requieren revisión</p>

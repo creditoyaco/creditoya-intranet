@@ -1,6 +1,7 @@
 "use client"
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
+import { useAuth } from "@/context/useAuth";
 import { companiesUser, ScalarClient } from "@/types/client";
 import axios from "axios";
 import Image from "next/image";
@@ -14,11 +15,19 @@ function InfoClient({ params }: { params: Promise<{ client_id: string }> }) {
     const [clientData, setClientData] = useState<ScalarClient | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { accessToken } = useAuth();
 
     useEffect(() => {
         const getInfoClient = async () => {
             try {
-                const response = await axios.get(`/api/dash/clients?client_id=${client_id}`);
+                const response = await axios.get(
+                    `/api/dash/clients?client_id=${client_id}`,
+                    {
+                        headers: { Authorization: `Bearer ${accessToken}` },
+                        // Add a timeout to prevent hanging requests
+                        timeout: 15000
+                    }
+                );
                 if (response.data.success) {
                     setClientData(response.data.data);
                 } else {
@@ -33,6 +42,8 @@ function InfoClient({ params }: { params: Promise<{ client_id: string }> }) {
 
         getInfoClient();
     }, [client_id]);
+
+    console.log(clientData);
 
     return (
         <SidebarLayout>

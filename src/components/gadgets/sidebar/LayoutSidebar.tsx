@@ -6,13 +6,24 @@ import {
     FiFileText,
     FiUsers,
     FiTool,
-    FiMessageSquare,
     FiX,
     FiLogOut,
     FiMenu,
     FiCopy,
     FiChevronLeft
 } from 'react-icons/fi';
+import { GrBook } from 'react-icons/gr';
+import { LiaFileInvoiceDollarSolid } from 'react-icons/lia';
+import { TbHistory } from 'react-icons/tb';
+
+type optionTypes =
+    "solicitudes" |
+    "prestamos" |
+    "clientes" |
+    "herramientas" |
+    "soporte" |
+    "comprobantes" |
+    "manual";
 
 interface SidebarLayoutProps {
     children: React.ReactNode;
@@ -54,8 +65,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon, text, isActive = false,
     );
 };
 
-type optionTypes = "solicitudes" | "prestamos" | "clientes" | "herramientas" | "feedbacks";
-
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
     const [activePage, setActivePage] = useState<optionTypes>('solicitudes');
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -77,8 +86,8 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
             setActivePage('clientes');
         } else if (pathname === "/dashboard/tools") {
             setActivePage('herramientas');
-        } else if (pathname === "/dashboard/feedbacks") {
-            setActivePage('feedbacks');
+        } else if (pathname === "/dashboard/novedades") {
+            setActivePage('soporte');
         }
 
         // Set initial sidebar state based on screen size
@@ -106,8 +115,12 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
             router.push("/dashboard/tools");
         } else if (option === "solicitudes") {
             router.push("/dashboard");
-        } else if (option === "feedbacks") {
-            router.push("/dashboard/feedbacks");
+        } else if (option === "soporte") {
+            router.push("/dashboard/soporte");
+        } else if (option === "comprobantes") {
+            router.push("/dashboard/comprobantes");
+        } else if (option === "manual") {
+            router.push("/dashboard/manual");
         }
     }
 
@@ -166,16 +179,28 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                             onClick={() => selectOption('clientes')}
                         />
                         <SidebarItem
+                            icon={<LiaFileInvoiceDollarSolid size={20} />}
+                            text="Comprobantes"
+                            isActive={activePage === 'comprobantes'}
+                            onClick={() => selectOption('comprobantes')}
+                        />
+                        <SidebarItem
                             icon={<FiTool size={20} />}
                             text="Herramientas"
                             isActive={activePage === 'herramientas'}
                             onClick={() => selectOption('herramientas')}
                         />
                         <SidebarItem
-                            icon={<FiMessageSquare size={20} />}
-                            text="FeedBacks"
-                            isActive={activePage === 'feedbacks'}
-                            onClick={() => selectOption('feedbacks')}
+                            icon={<GrBook size={20} />}
+                            text="Documentacion"
+                            isActive={activePage === 'manual'}
+                            onClick={() => selectOption('manual')}
+                        />
+                        <SidebarItem
+                            icon={<TbHistory size={20} />}
+                            text="Soporte"
+                            isActive={activePage === 'soporte'}
+                            onClick={() => selectOption('soporte')}
                         />
                     </div>
 
@@ -235,14 +260,24 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                             onClick={() => handleIconSidebarClick('clientes')}
                         />
                         <IconSidebarItem
+                            icon={<LiaFileInvoiceDollarSolid size={20} />}
+                            isActive={activePage === 'comprobantes'}
+                            onClick={() => selectOption('comprobantes')}
+                        />
+                        <IconSidebarItem
                             icon={<FiTool size={20} />}
                             isActive={activePage === 'herramientas'}
                             onClick={() => handleIconSidebarClick('herramientas')}
                         />
                         <IconSidebarItem
-                            icon={<FiMessageSquare size={20} />}
-                            isActive={activePage === 'feedbacks'}
-                            onClick={() => handleIconSidebarClick('feedbacks')}
+                            icon={<GrBook size={20} />}
+                            isActive={activePage === 'manual'}
+                            onClick={() => selectOption('manual')}
+                        />
+                        <IconSidebarItem
+                            icon={<TbHistory size={20} />}
+                            isActive={activePage === 'soporte'}
+                            onClick={() => selectOption('soporte')}
                         />
                     </div>
 
