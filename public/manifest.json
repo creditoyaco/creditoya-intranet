@@ -1,0 +1,27 @@
+{
+    "theme_color": "#c4c0bd",
+    "background_color": "#f5efef",
+    "display": "standalone",
+    "scope": "/",
+    "start_url": "/",
+    "name": "Intranet Credito Ya",
+    "short_name": "Credito Ya",
+    "description": "Intranet PWA para trabajadores de la empresa \"Credito Ya\"",
+    "icons": [
+        {
+            "src": "/logo_192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo_256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo_512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

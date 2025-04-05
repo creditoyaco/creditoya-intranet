@@ -17,6 +17,8 @@ function InfoClient({ params }: { params: Promise<{ client_id: string }> }) {
     const [error, setError] = useState<string | null>(null);
     const { accessToken } = useAuth();
 
+    console.log(accessToken);
+
     useEffect(() => {
         const getInfoClient = async () => {
             try {
@@ -28,6 +30,7 @@ function InfoClient({ params }: { params: Promise<{ client_id: string }> }) {
                         timeout: 15000
                     }
                 );
+                console.log(response.data);
                 if (response.data.success) {
                     setClientData(response.data.data);
                 } else {

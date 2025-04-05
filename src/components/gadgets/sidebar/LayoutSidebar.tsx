@@ -84,7 +84,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
             setActivePage('prestamos');
         } else if (pathname === "/dashboard/clients") {
             setActivePage('clientes');
-        } else if (pathname === "/dashboard/tools") {
+        } else if (pathname === "/dashboard/herramientas") {
             setActivePage('herramientas');
         } else if (pathname === "/dashboard/novedades") {
             setActivePage('soporte');
@@ -112,7 +112,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
         } else if (option === "clientes") {
             router.push("/dashboard/clients");
         } else if (option === "herramientas") {
-            router.push("/dashboard/tools");
+            router.push("/dashboard/herramientas");
         } else if (option === "solicitudes") {
             router.push("/dashboard");
         } else if (option === "soporte") {

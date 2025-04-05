@@ -19,7 +19,6 @@ import {
     IoMdRefresh,
 } from "react-icons/io";
 import { FaCheckCircle, FaTimesCircle, FaEdit } from "react-icons/fa";
-import { RxMagnifyingGlass } from "react-icons/rx";
 import Image from "next/image";
 import { GoShieldCheck } from "react-icons/go";
 import useLoan from "@/hooks/dashboard/useLoan";
@@ -100,8 +99,8 @@ function LoanData({ params }: LoanDataProps) {
                 </div>
 
                 {/* Información del préstamo */}
-                <div className="flex flex-col md:flex-row flex-wrap gap-4">
-                    <div className="w-full md:w-[400px] flex-grow">
+                <div className="flex flex-col md:flex-row flex-wrap gap-6">
+                    <div className="w-full md:w-[400px] flex-grow mb-10">
                         <div className="flex flex-col-reverse gap-1 mb-4">
                             <h2 className="text-lg font-semibold text-gray-800">Detalles del Préstamo</h2>
                             <div className="flex items-center gap-1 text-sm text-gray-500">
@@ -115,53 +114,53 @@ function LoanData({ params }: LoanDataProps) {
                             <div className="flex items-center space-x-2">
                                 <IoMdContact className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
-                                    <p className="text-sm text-gray-500">Nombre Completo</p>
-                                    <p className="font-medium">{user.names} {user.firstLastName} {user.secondLastName}</p>
+                                    <p className="text-sm text-gray-800">Nombre Completo</p>
+                                    <p className="font-thin text-gray-600">{user.names} {user.firstLastName} {user.secondLastName}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <IoMdMail className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
-                                    <p className="text-sm text-gray-500">Email</p>
-                                    <p className="font-medium">{user.email}</p>
+                                    <p className="text-sm text-gray-800">Email</p>
+                                    <p className="font-thin text-gray-600">{user.email}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <IoMdCall className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
-                                    <p className="text-sm text-gray-500">Teléfono</p>
-                                    <p className="font-medium">{user.phone}</p>
+                                    <p className="text-sm text-gray-800">Teléfono</p>
+                                    <p className="font-thin text-gray-600">{user.phone}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <IoMdPin className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
-                                    <p className="text-sm text-gray-500">Ciudad</p>
-                                    <p className="font-medium">{user.city}</p>
+                                    <p className="text-sm text-gray-800">Ciudad</p>
+                                    <p className="font-thin text-gray-600">{user.city}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <IoMdBusiness className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
-                                    <p className="text-sm text-gray-500">Empresa</p>
-                                    <p className="font-medium">{user.currentCompanie}</p>
+                                    <p className="text-sm text-gray-800">Empresa</p>
+                                    <p className="font-thin text-gray-600">{user.currentCompanie}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center space-x-2">
                                 <IoMdCash className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
-                                    <p className="text-sm text-gray-500">Monto Solicitado</p>
-                                    <p className="font-medium text-xl">${loanApplication.cantity}</p>
+                                    <p className="text-sm text-gray-800">Monto Solicitado</p>
+                                    <p className="font-thin text-gray-600 text-xl">${loanApplication.cantity}</p>
                                     {loanApplication.newCantity && (
-                                        <p className="text-sm text-orange-500">
-                                            Monto ajustado a: ${loanApplication.newCantity}
+                                        <p className="text-sm text-gray-500">
+                                            Monto ajustado a: <span>$ {loanApplication.newCantity} </span>
                                             {loanApplication.reasonChangeCantity && (
-                                                <span className="block text-xs text-gray-500 mt-1">
+                                                <span className="block text-xs text-gray-500 font-thin mt-1">
                                                     Motivo: {loanApplication.reasonChangeCantity}
                                                 </span>
                                             )}
@@ -171,25 +170,22 @@ function LoanData({ params }: LoanDataProps) {
                             </div>
 
                             <div className="flex items-center space-x-2">
-                                <FaEdit className="min-w-8 text-4xl text-yellow-500 drop-shadow-md" />
+                                <FaEdit className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-500">Estado</p>
                                     <div className="flex items-center gap-2">
                                         {loanApplication.status === "Pendiente" && (
                                             <>
-                                                <RxMagnifyingGlass className="text-yellow-500" />
                                                 <p className="font-medium text-yellow-500">Pendiente</p>
                                             </>
                                         )}
                                         {loanApplication.status === "Aprobado" && (
                                             <>
-                                                <FaCheckCircle className="text-green-500" />
                                                 <p className="font-medium text-green-500">Aceptado</p>
                                             </>
                                         )}
                                         {loanApplication.status === "Aplazado" && (
                                             <>
-                                                <FaTimesCircle className="text-red-500" />
                                                 <p className="font-medium text-red-500">Rechazado</p>
                                                 {loanApplication.reasonReject && (
                                                     <p className="text-xs text-gray-500 ml-2">
@@ -204,7 +200,7 @@ function LoanData({ params }: LoanDataProps) {
                         </div>
                     </div>
 
-                    <div className="w-full md:w-[400px] flex-grow bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div className="w-full md:w-[400px] flex-grow bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col min-h-[500px]">
                         {/* Encabezado */}
                         <div className="flex items-center gap-2 p-3 border-b border-gray-100">
                             <GoShieldCheck className="text-xl text-green-600" />
@@ -212,27 +208,24 @@ function LoanData({ params }: LoanDataProps) {
                         </div>
 
                         {/* Contenedor de imagen */}
-                        <div className="relative">
-                            <div className="flex flex-col gap-2 sm:flex-row">
+                        <div className="relative p-4">
+                            <div className="flex justify-center bg-gray-100">
                                 {user.Document && user.Document.length > 0 && (
-                                    <Image
-                                        src={user.Document[0].imageWithCC!}
-                                        alt="Verificación con documento"
-                                        width={400}
-                                        height={400}
-                                        className="w-[220px] h-auto object-cover mx-auto rounded-md"
-                                    />
+                                    <div className="w-[320px] h-[260px] overflow-hidden rounded-md relative">
+                                        <Image
+                                            src={user.Document[0].imageWithCC!}
+                                            alt="Verificación con documento"
+                                            width={400}
+                                            height={400}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
                                 )}
-                            </div>
-                            <div className="absolute top-3 right-3">
-                                <div className="bg-green-100 rounded-full p-1">
-                                    <IoMdCheckmarkCircle className="text-xl text-green-600" />
-                                </div>
                             </div>
                         </div>
 
                         {/* Información de verificación */}
-                        <div className="p-3 space-y-2">
+                        <div className="p-3 space-y-2 flex-grow">
                             <div className="flex items-center gap-2">
                                 <IoMdCheckmarkCircle className="text-green-600 text-lg" />
                                 <span className="text-sm">Identidad confirmada</span>
@@ -261,18 +254,14 @@ function LoanData({ params }: LoanDataProps) {
                         </div>
 
                         {/* Pie */}
-                        <div className="p-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
-                            <div className="flex items-center justify-between">
+                        <div className="p-3 border-t border-gray-100 bg-gray-50 rounded-b-lg mt-auto">
+                            <div className="flex justify-end">
                                 <div className="flex items-center gap-1">
                                     <IoMdInformationCircle className="text-gray-500" />
                                     <span className="text-xs text-gray-500">
                                         {user.Document && user.Document.length > 0 ? `ID: ${user.Document[0].id.substring(0, 8)}` : "ID: No disponible"}
                                     </span>
                                 </div>
-                                <button className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                    <IoMdRefresh />
-                                    Actualizar
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -283,9 +272,9 @@ function LoanData({ params }: LoanDataProps) {
                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Documentos Adjuntos</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         {documents.map((doc, index) => (
-                            <div key={index} className="border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center space-y-2">
-                                <IoMdDocument className="text-4xl text-gray-500" />
-                                <p className="text-sm font-medium text-gray-700">{doc.name}</p>
+                            <div key={index} className="border border-gray-100 hover:border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center space-y-2">
+                                <IoMdDocument className="text-4xl text-gray-500 drop-shadow-md" />
+                                <p className="text-sm font-thin text-gray-700">{doc.name}</p>
                                 <div className="flex gap-2">
                                     <button
                                         className="px-3 gap-1 bg-blue-400 text-white rounded hover:bg-blue-600 transition flex flex-row"
@@ -338,7 +327,13 @@ function LoanData({ params }: LoanDataProps) {
                 {/* Modal de Rechazo */}
                 {isRejectModalOpen && (
                     <div className="fixed inset-0 flex items-center justify-center z-50">
-                        <div className="absolute inset-0 bg-black bg-opacity-50 blur-sm" onClick={() => setRejectModalOpen(false)}></div>
+                        {/* Fondo con blur */}
+                        <div
+                            className="absolute inset-0 backdrop-blur-sm bg-white/30"
+                            onClick={() => setRejectModalOpen(false)}
+                        ></div>
+
+                        {/* Contenido del modal */}
                         <div className="relative bg-white p-6 rounded-lg shadow-lg z-50 w-full max-w-md mx-auto">
                             <h2 className="text-lg font-bold mb-4">Rechazar Solicitud</h2>
                             <textarea
@@ -348,7 +343,10 @@ function LoanData({ params }: LoanDataProps) {
                                 onChange={(e) => setRejectReason(e.target.value)}
                             />
                             <div className="flex justify-end mt-4">
-                                <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition" onClick={handleReject}>
+                                <button
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                                    onClick={handleReject}
+                                >
                                     Listo
                                 </button>
                             </div>
@@ -359,7 +357,13 @@ function LoanData({ params }: LoanDataProps) {
                 {/* Modal de Ajuste de Monto */}
                 {isAdjustModalOpen && (
                     <div className="fixed inset-0 flex items-center justify-center z-50">
-                        <div className="absolute inset-0 bg-black bg-opacity-50 blur-sm" onClick={() => setAdjustModalOpen(false)}></div>
+                        {/* Fondo con blur translúcido */}
+                        <div
+                            className="absolute inset-0 backdrop-blur-sm bg-white/30"
+                            onClick={() => setAdjustModalOpen(false)}
+                        ></div>
+
+                        {/* Contenido del modal */}
                         <div className="relative bg-white p-6 rounded-lg shadow-lg z-50 w-full max-w-md mx-auto">
                             <h2 className="text-lg font-bold mb-4">Ajustar Monto</h2>
                             <input
@@ -376,7 +380,10 @@ function LoanData({ params }: LoanDataProps) {
                                 onChange={(e) => setAdjustReason(e.target.value)}
                             />
                             <div className="flex justify-end mt-4">
-                                <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition" onClick={handleAdjust}>
+                                <button
+                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                                    onClick={handleAdjust}
+                                >
                                     Listo
                                 </button>
                             </div>
@@ -387,7 +394,13 @@ function LoanData({ params }: LoanDataProps) {
                 {/* Modal de Visualización de Documento */}
                 {selectedDocument && (
                     <div className="fixed inset-0 flex items-center justify-center z-50">
-                        <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setSelectedDocument(null)}></div>
+                        {/* Fondo con blur translúcido */}
+                        <div
+                            className="absolute inset-0 backdrop-blur-sm bg-white/30"
+                            onClick={() => setSelectedDocument(null)}
+                        ></div>
+
+                        {/* Contenido del modal */}
                         <div className="relative bg-white p-6 rounded-lg shadow-lg z-50 w-full max-w-2xl mx-auto">
                             <h2 className="text-lg font-bold mb-4">Visualizar Documento</h2>
                             <iframe
