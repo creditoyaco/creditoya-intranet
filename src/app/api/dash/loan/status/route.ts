@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { Status } from '@/types/loan';
 
@@ -14,7 +14,7 @@ interface statusLoan {
   reason?: string;
 }
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
     // Extraer los parámetros de consulta de la URL
     const { searchParams } = new URL(request.url);
@@ -26,9 +26,15 @@ export async function PATCH(request: Request) {
 
     // Extraer el cuerpo de la solicitud
     const requestBody: { status: Status } = await request.json();
+    console.log('requestBody: ', requestBody);
+    const token = request.cookies.get('TOKEN_KEY')?.value;
 
     // Hacer la petición al backend de NestJS
-    const response = await axios.patch(`${process.env.GATEWAY_API}/loans/${loanId}/status`, requestBody);
+    const response = await axios.patch(
+      `${process.env.GATEWAY_API}/loans/${loanId}/status`,
+      requestBody,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
 
     if (response.data.success === false) throw new Error(response.data.error);
 

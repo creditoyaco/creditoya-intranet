@@ -71,7 +71,7 @@ export default function Home() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
+                className="w-full text-base text-gray-700 px-3 py-2 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
                 placeholder="nombre@empresa.com"
               />
             </div>
@@ -88,7 +88,7 @@ export default function Home() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
+                className="w-full text-base text-gray-700 px-3 py-2 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-green-400"
                 placeholder="••••••••"
               />
             </div>

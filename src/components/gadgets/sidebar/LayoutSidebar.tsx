@@ -1,7 +1,8 @@
 "use client"
 
-import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/context/useAuth';
+import useSideBar, { SidebarLayoutProps } from '@/hooks/gadgets/useSidebar';
+import React from 'react';
 import {
     FiFileText,
     FiUsers,
@@ -16,119 +17,18 @@ import { GrBook } from 'react-icons/gr';
 import { LiaFileInvoiceDollarSolid } from 'react-icons/lia';
 import { TbHistory } from 'react-icons/tb';
 
-type optionTypes =
-    "solicitudes" |
-    "prestamos" |
-    "clientes" |
-    "herramientas" |
-    "soporte" |
-    "comprobantes" |
-    "manual";
-
-interface SidebarLayoutProps {
-    children: React.ReactNode;
-}
-
-interface SidebarItemProps {
-    icon: React.ReactNode;
-    text: string;
-    isActive?: boolean;
-    onClick?: () => void;
-}
-
-const IconSidebarItem: React.FC<{ icon: React.ReactNode, isActive?: boolean, onClick?: () => void }> = ({
-    icon,
-    isActive = false,
-    onClick
-}) => {
-    return (
-        <div
-            className={`flex justify-center p-3 mb-1 rounded-md cursor-pointer ${isActive ? 'bg-gray-200' : 'hover:bg-gray-100'
-                }`}
-            onClick={onClick}
-        >
-            <div className="text-green-600">{icon}</div>
-        </div>
-    );
-};
-
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, text, isActive = false, onClick }) => {
-    return (
-        <div
-            className={`flex items-center px-4 py-3 mb-1 rounded-md cursor-pointer ${isActive ? 'bg-gray-200' : 'hover:bg-gray-100'
-                }`}
-            onClick={onClick}
-        >
-            <div className="mr-3 text-green-600">{icon}</div>
-            <span className={`${isActive ? 'font-medium' : ''} text-gray-800`}>{text}</span>
-        </div>
-    );
-};
-
 const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
-    const [activePage, setActivePage] = useState<optionTypes>('solicitudes');
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-    const router = useRouter();
-    const pathname = usePathname();
+    const {
+        activePage,
+        sidebarOpen,
+        toggleSidebar,
+        selectOption,
+        handleIconSidebarClick,
+        IconSidebarItem,
+        SidebarItem
+    } = useSideBar();
 
-    // Check if viewport is mobile
-    const isMobile = () => {
-        return window.innerWidth < 1024; // lg breakpoint in Tailwind
-    };
-
-    // Sincronizar estado con la ruta actual
-    useEffect(() => {
-        if (pathname === "/dashboard") {
-            setActivePage('solicitudes');
-        } else if (pathname === "/dashboard/active") {
-            setActivePage('prestamos');
-        } else if (pathname === "/dashboard/clients") {
-            setActivePage('clientes');
-        } else if (pathname === "/dashboard/herramientas") {
-            setActivePage('herramientas');
-        } else if (pathname === "/dashboard/novedades") {
-            setActivePage('soporte');
-        }
-
-        // Set initial sidebar state based on screen size
-        setSidebarOpen(!isMobile());
-    }, [pathname]);
-
-    const toggleSidebar = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
-
-    const selectOption = (option: optionTypes) => {
-        setActivePage(option);
-
-        // Close sidebar on mobile when an option is selected
-        if (isMobile()) {
-            setSidebarOpen(false);
-        }
-
-        // Navigate to the selected page
-        if (option === "prestamos") {
-            router.push("/dashboard/active");
-        } else if (option === "clientes") {
-            router.push("/dashboard/clients");
-        } else if (option === "herramientas") {
-            router.push("/dashboard/herramientas");
-        } else if (option === "solicitudes") {
-            router.push("/dashboard");
-        } else if (option === "soporte") {
-            router.push("/dashboard/soporte");
-        } else if (option === "comprobantes") {
-            router.push("/dashboard/comprobantes");
-        } else if (option === "manual") {
-            router.push("/dashboard/manual");
-        }
-    }
-
-    // Handle icon sidebar click without expanding
-    const handleIconSidebarClick = (option: optionTypes) => {
-        selectOption(option);
-        // Important: Don't toggle sidebar open on desktop when using the icon sidebar
-    };
+    const { user, logout } = useAuth();
 
     return (
         <div className="flex h-screen bg-white relative">
@@ -208,16 +108,16 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                     <div className="p-4 border-t border-gray-200 mt-auto">
                         <div className="flex items-center">
                             <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white font-bold mr-3">
-                                T
+                                {user?.name?.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1">
-                                <div className="font-medium text-gray-800">Tripcode Maintenance</div>
-                                <div className="text-xs text-gray-600">Administrador</div>
+                                <div className="font-medium text-gray-800">{user?.name}</div>
+                                <div className="text-xs text-gray-600">{user?.rol}</div>
                             </div>
                         </div>
 
                         {/* Logout button */}
-                        <div className="mt-4 flex items-center text-gray-700 hover:text-red-600 cursor-pointer">
+                        <div onClick={logout} className="mt-4 flex items-center text-gray-700 hover:text-red-600 cursor-pointer">
                             <span>Cerrar Session</span>
                             <FiLogOut className="ml-2" size={16} />
                         </div>
@@ -284,7 +184,7 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                     {/* User profile icon only - fixed at bottom */}
                     <div className="mt-auto p-4 border-t border-gray-200 flex justify-center">
                         <div className="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white font-bold">
-                            T
+                            {user?.name?.charAt(0).toUpperCase()}
                         </div>
                     </div>
                 </div>

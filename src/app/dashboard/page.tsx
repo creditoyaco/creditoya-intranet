@@ -139,7 +139,7 @@ function DashboardPage() {
         <SidebarLayout>
             <div className="pt-20 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen overflow-scroll">
                 <header className="mb-8">
-                    <h1 className="text-xl sm:text-2xl font-medium text-gray-800">Guía Integral de Aplicaciones de Crédito Ya</h1>
+                    <h1 className="text-xl sm:text-2xl font-medium text-gray-800">Solicitudes entrantes</h1>
                     <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes que requieren revisión</p>
                 </header>
 

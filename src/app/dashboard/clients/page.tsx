@@ -1,89 +1,23 @@
 "use client";
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
-import { useState, useEffect } from "react";
+import useClient from "@/hooks/dashboard/useClients";
 import Image from "next/image";
-import axios from "axios";
-import { ScalarClient } from "@/types/client";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/useAuth";
 import { FiSearch } from "react-icons/fi";
 
 function UserPage() {
-    const [users, setUsers] = useState<ScalarClient[]>([]);
-    const [searchQuery, setSearchQuery] = useState(""); 
-    const [currentPage, setCurrentPage] = useState(1);
-    const usersPerPage = 10;
-    const [totalPages, setTotalPages] = useState(1);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const router = useRouter();
-    const { accessToken } = useAuth();
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-            if (!accessToken) {
-                console.log("No access token available");
-                setError("No hay token de acceso disponible");
-                setLoading(false);
-                return;
-            }
-
-            setLoading(true);
-            setError(null);
-
-            try {
-                console.log(`Fetching users with page=${currentPage}, pageSize=${usersPerPage}`);
-                const response = await axios.get(
-                    `/api/dash/clients?page=${currentPage}&pageSize=${usersPerPage}`,
-                    {
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                        // Add a timeout to prevent hanging requests
-                        timeout: 15000
-                    }
-                );
-
-                console.log("API Response:", response.data);
-
-                if (response.data.success) {
-                    const userData = response.data.data;
-                    console.log("User data structure:", userData);
-
-                    // Check if the response has the expected structure from backend service
-                    if (userData.users && userData.totalCount !== undefined) {
-                        setUsers(userData.users);
-                        setTotalPages(Math.ceil(userData.totalCount / usersPerPage));
-                        console.log(`Set ${userData.users.length} users, totalPages=${Math.ceil(userData.totalCount / usersPerPage)}`);
-                    } else {
-                        console.error("Unexpected response structure:", userData);
-                        setError("Formato de respuesta inesperado");
-                    }
-                } else {
-                    console.error("API reported an error:", response.data.error);
-                    setError(response.data.error || "Error al cargar los usuarios.");
-                }
-            } catch (err: any) {
-                console.error("Request error:", err);
-                if (err.code === 'ECONNABORTED') {
-                    setError("La solicitud ha tardado demasiado tiempo. Por favor, inténtalo de nuevo.");
-                } else {
-                    setError(err.response?.data?.error || err.message || "Error al conectar con el servidor.");
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchUsers();
-    }, [currentPage, accessToken]);
-
-    const nextPage = () => {
-        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-    };
-
-    const prevPage = () => {
-        if (currentPage > 1) setCurrentPage(currentPage - 1);
-    };
+    const {
+        users,
+        searchQuery,
+        setSearchQuery,
+        router,
+        currentPage,
+        totalPages,
+        prevPage,
+        nextPage,
+        loading,
+        error
+    } = useClient({ params: null });
 
     return (
         <SidebarLayout>

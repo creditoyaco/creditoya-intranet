@@ -1,52 +1,18 @@
 "use client"
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
-import { useAuth } from "@/context/useAuth";
-import { companiesUser, ScalarClient } from "@/types/client";
-import axios from "axios";
+import useClient from "@/hooks/dashboard/useClients";
+import { companiesUser } from "@/types/client";
 import Image from "next/image";
-import { use, useEffect, useState } from "react";
 import { IoIosCheckmarkCircle, IoMdFingerPrint } from "react-icons/io";
 import { IoBanOutline, IoDocumentAttachOutline } from "react-icons/io5";
 
 function InfoClient({ params }: { params: Promise<{ client_id: string }> }) {
-    const resolvedParams = use(params);
-    const { client_id } = resolvedParams;
-    const [clientData, setClientData] = useState<ScalarClient | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const { accessToken } = useAuth();
-
-    console.log(accessToken);
-
-    useEffect(() => {
-        const getInfoClient = async () => {
-            try {
-                const response = await axios.get(
-                    `/api/dash/clients?client_id=${client_id}`,
-                    {
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                        // Add a timeout to prevent hanging requests
-                        timeout: 15000
-                    }
-                );
-                console.log(response.data);
-                if (response.data.success) {
-                    setClientData(response.data.data);
-                } else {
-                    setError("No se encontró información del cliente.");
-                }
-            } catch (err) {
-                setError("Error al obtener la información del cliente.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        getInfoClient();
-    }, [client_id]);
-
-    console.log(clientData);
+    const {
+        loading,
+        error,
+        clientData,
+    } = useClient({ params });
 
     return (
         <SidebarLayout>

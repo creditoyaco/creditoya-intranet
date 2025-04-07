@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/useAuth";
 import { ScalarClient } from "@/types/client";
 import { ScalarLoanApplication } from "@/types/loan";
 import axios from "axios";
@@ -5,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 function useLoan({ loanId }: { loanId: string }) {
-    
-
     const [isRejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
     const [isAdjustModalOpen, setAdjustModalOpen] = useState<boolean>(false);
     const [rejectReason, setRejectReason] = useState<string>("");
@@ -15,10 +14,13 @@ function useLoan({ loanId }: { loanId: string }) {
     const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [loanApplication, setLoanApplication] = useState<ScalarLoanApplication | null>(null);
-    const [user, setUser] = useState<ScalarClient | null>(null);
+    const [client, setClient] = useState<ScalarClient | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isAccepting, setIsAccepting] = useState<boolean>(false);
+    const [isRejecting, setIsRejecting] = useState<boolean>(false);
 
     const router = useRouter();
+    const { user } = useAuth();
 
     useEffect(() => {
         const fetchLoanData = async () => {
@@ -59,7 +61,7 @@ function useLoan({ loanId }: { loanId: string }) {
                         bankSavingAccount: loanData.bankSavingAccount ?? "", // Cuenta de ahorros
                         bankNumberAccount: loanData.bankNumberAccount ?? "", // Número de cuenta
                     });
-                    setUser(loanData.user);
+                    setClient(loanData.user);
                 } else {
                     setError("No se pudo obtener la información del préstamo");
                 }
@@ -85,11 +87,13 @@ function useLoan({ loanId }: { loanId: string }) {
 
     const handleReject = async () => {
         try {
-            const response = await axios.post(`/api/dash/loan/status?loan_id=${loanId}`, {
+            const response = await axios.patch(`/api/dash/loan/status?loan_id=${loanId}`, {
                 status: "Aplazado",
                 reasonReject: rejectReason,
                 employeeId: user?.id
             });
+
+            console.log("response: ", response.data);
 
             if (response.data.success) {
                 // Update local state
@@ -109,10 +113,10 @@ function useLoan({ loanId }: { loanId: string }) {
 
     const handleAdjust = async () => {
         try {
-            const response = await axios.post("/api/dash/loan/adjust", {
-                loanId,
-                newAmount: newAmount,
-                reason: adjustReason
+            const response = await axios.patch(`/api/dash/loan/status?loan_id=${loanId}`, {
+                status: "Pendiente",
+                newCantity: newAmount,
+                reasonChangeCantity: adjustReason
             });
 
             if (response.data.success) {
@@ -133,6 +137,7 @@ function useLoan({ loanId }: { loanId: string }) {
 
     const handleAccept = async () => {
         try {
+            setIsAccepting(true);
             const response = await axios.patch(`/api/dash/loan/status?loan_id=${loanId}`, {
                 status: "Aprobado",
                 employeeId: user?.id
@@ -148,6 +153,7 @@ function useLoan({ loanId }: { loanId: string }) {
                         status: "Aprobado",
                         employeeId: response.data.data.employeeId,
                     });
+                    setIsAccepting(false);
                 }
             }
         } catch (error) {
@@ -159,7 +165,7 @@ function useLoan({ loanId }: { loanId: string }) {
         loading,
         error,
         loanApplication,
-        user,
+        client,
         router,
         documents,
         isRejectModalOpen,
@@ -168,6 +174,8 @@ function useLoan({ loanId }: { loanId: string }) {
         newAmount,
         adjustReason,
         selectedDocument,
+        isAccepting,
+        isRejecting,
         setSelectedDocument,
         handleAccept,
         setRejectModalOpen,

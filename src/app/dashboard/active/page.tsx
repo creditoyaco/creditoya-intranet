@@ -3,7 +3,6 @@
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
 import { useState, useEffect } from "react";
 import { FiSearch, FiUser, FiDollarSign, FiCalendar, FiFileText } from "react-icons/fi";
-import exampleData from "@/components/jsons/examplesLoans.json" assert { type: "json" };
 import axios from "axios";
 
 interface User {
@@ -43,10 +42,13 @@ function ActiveSection() {
     const [isLoading, setIsLoading] = useState(true);
     const [loanData, setLoanData] = useState<LoanData[]>([]);
     const [filteredData, setFilteredData] = useState<LoanData[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
+            setError(null);
+
             try {
                 let statusParam = "";
                 switch (activeTab) {
@@ -63,17 +65,23 @@ function ActiveSection() {
                         statusParam = "Aprobado";
                 }
 
-                const response = await axios.get(`/api/dash/status?status=${statusParam}&page=1&pageSize=5`);
-                console.log(response.data)
+                console.log(`Fetching data for status: ${statusParam}`);
+                const response = await axios.get(`/api/dash/status?status=${statusParam}&page=1&pageSize=10`);
+                console.log("API Response:", response.data);
 
                 if (response.data.success && Array.isArray(response.data.data)) {
                     setLoanData(response.data.data);
+                    setFilteredData(response.data.data); // Initialize filtered data with all data
                 } else {
-                    setLoanData([]); // Aseguramos que loanData siempre sea un array
+                    console.warn("No data returned or invalid format:", response.data);
+                    setLoanData([]);
+                    setFilteredData([]);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
-                setLoanData([]); // En caso de error, aseguramos que no sea undefined
+                setError("Error al cargar los datos. Por favor, intente de nuevo más tarde.");
+                setLoanData([]);
+                setFilteredData([]);
             } finally {
                 setIsLoading(false);
             }
@@ -82,42 +90,68 @@ function ActiveSection() {
         fetchData();
     }, [activeTab]);
 
-
+    // Apply search filter separately
     useEffect(() => {
-        if (loanData.length === 0) return;
+        if (!searchQuery.trim()) {
+            // If search is empty, show all data
+            setFilteredData(loanData);
+            return;
+        }
+
+        const query = searchQuery.toLowerCase().trim();
         const filtered = loanData.filter(item =>
-            item.document.number.includes(searchQuery)
+            // Search by document number
+            item.document?.number?.toLowerCase().includes(query) ||
+            // Search by full name
+            `${item.user?.names} ${item.user?.firstLastName} ${item.user?.secondLastName}`.toLowerCase().includes(query) ||
+            // Search by loan ID
+            item.loanApplication?.id?.toLowerCase().includes(query)
         );
+
         setFilteredData(filtered);
     }, [searchQuery, loanData]);
 
     // Format date
     const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('es-CO', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        if (!dateString) return "Fecha no disponible";
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-CO', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch (e) {
+            return "Formato de fecha inválido";
+        }
     };
 
     // Format currency
     const formatCurrency = (value: string) => {
-        const amount = parseFloat(value);
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(amount);
+        if (!value) return "$0";
+        try {
+            const amount = parseFloat(value);
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        } catch (e) {
+            return "Valor inválido";
+        }
     };
 
     return (
         <SidebarLayout>
             <div className="pt-20 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen overflow-scroll">
                 <header className="mb-8">
-                    <h1 className="text-xl sm:text-2xl font-medium text-gray-800">Solicitudes Pendientes</h1>
-                    <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes que requieren revisión</p>
+                    <h1 className="text-xl sm:text-2xl font-medium text-gray-800">
+                        {activeTab === 'aprobados' ? 'Solicitudes Aprobadas' :
+                            activeTab === 'aplazados' ? 'Solicitudes Aplazadas' :
+                                'Solicitudes con Ajuste de Monto'}
+                    </h1>
+                    <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes según su estado</p>
                 </header>
 
                 {/* Tab navigation */}
@@ -175,6 +209,15 @@ function ActiveSection() {
                         <div className="flex justify-center py-12">
                             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-500"></div>
                         </div>
+                    ) : error ? (
+                        <div className="flex flex-col items-center justify-center py-12">
+                            <div className="text-red-500 mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <p className="text-gray-500 font-medium text-center">{error}</p>
+                        </div>
                     ) : filteredData.length > 0 ? (
                         <div className="space-y-4">
                             {filteredData.map((item) => (
@@ -211,7 +254,7 @@ function ActiveSection() {
                                         </div>
 
                                         <div className="flex items-center">
-                                            <span className="text-sm mr-2">{item.user.currentCompanie}</span>
+                                            <span className="text-sm mr-2">{item.user.currentCompanie || 'No definido'}</span>
                                             <span className={`px-3 py-1 rounded-full text-xs font-medium
                                                     ${item.loanApplication.status === 'Aprobado' ? 'bg-green-100 text-green-800' :
                                                     item.loanApplication.status === 'Aplazado' ? 'bg-red-100 text-red-800' :

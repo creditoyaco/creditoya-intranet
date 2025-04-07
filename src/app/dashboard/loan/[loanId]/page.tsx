@@ -18,11 +18,13 @@ import {
     IoMdInformationCircle,
     IoMdRefresh,
 } from "react-icons/io";
-import { FaCheckCircle, FaTimesCircle, FaEdit } from "react-icons/fa";
+import { FaCheckCircle, FaTimesCircle, FaEdit, FaSpinner } from "react-icons/fa";
 import Image from "next/image";
 import { GoShieldCheck } from "react-icons/go";
 import useLoan from "@/hooks/dashboard/useLoan";
 import { use } from "react";
+import { stringToPriceCOP } from "@/handlers/StringToCOP";
+import { handleKeyToCompany } from "@/handlers/keyToCompany";
 
 interface LoanDataProps {
     params: Promise<{ loanId: string }>;
@@ -35,7 +37,7 @@ function LoanData({ params }: LoanDataProps) {
         loading,
         error,
         loanApplication,
-        user,
+        client,
         router,
         documents,
         isRejectModalOpen,
@@ -44,6 +46,8 @@ function LoanData({ params }: LoanDataProps) {
         newAmount,
         adjustReason,
         selectedDocument,
+        isAccepting,
+        isRejecting,
         setSelectedDocument,
         handleAccept,
         setRejectModalOpen,
@@ -54,7 +58,6 @@ function LoanData({ params }: LoanDataProps) {
         setNewAmount,
         setAdjustReason,
     } = useLoan({ loanId });
-
 
     if (loading) {
         return (
@@ -68,7 +71,7 @@ function LoanData({ params }: LoanDataProps) {
         );
     }
 
-    if (error || !loanApplication || !user) {
+    if (error || !loanApplication || !client) {
         return (
             <SidebarLayout>
                 <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
@@ -115,7 +118,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <IoMdContact className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-800">Nombre Completo</p>
-                                    <p className="font-thin text-gray-600">{user.names} {user.firstLastName} {user.secondLastName}</p>
+                                    <p className="font-thin text-gray-600">{client.names} {client.firstLastName} {client.secondLastName}</p>
                                 </div>
                             </div>
 
@@ -123,7 +126,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <IoMdMail className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-800">Email</p>
-                                    <p className="font-thin text-gray-600">{user.email}</p>
+                                    <p className="font-thin text-gray-600">{client.email}</p>
                                 </div>
                             </div>
 
@@ -131,7 +134,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <IoMdCall className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-800">Teléfono</p>
-                                    <p className="font-thin text-gray-600">{user.phone}</p>
+                                    <p className="font-thin text-gray-600">{client.phone}</p>
                                 </div>
                             </div>
 
@@ -139,7 +142,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <IoMdPin className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-800">Ciudad</p>
-                                    <p className="font-thin text-gray-600">{user.city}</p>
+                                    <p className="font-thin text-gray-600">{client.city}</p>
                                 </div>
                             </div>
 
@@ -147,7 +150,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <IoMdBusiness className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-800">Empresa</p>
-                                    <p className="font-thin text-gray-600">{user.currentCompanie}</p>
+                                    <p className="font-thin text-gray-600">{handleKeyToCompany(client.currentCompanie!)}</p>
                                 </div>
                             </div>
 
@@ -155,19 +158,24 @@ function LoanData({ params }: LoanDataProps) {
                                 <IoMdCash className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
                                 <div className="w-full">
                                     <p className="text-sm text-gray-800">Monto Solicitado</p>
-                                    <p className="font-thin text-gray-600 text-xl">${loanApplication.cantity}</p>
-                                    {loanApplication.newCantity && (
-                                        <p className="text-sm text-gray-500">
-                                            Monto ajustado a: <span>$ {loanApplication.newCantity} </span>
+                                    {loanApplication.newCantity ? (
+                                        <>
+                                            <div className="flex items-center space-x-2">
+                                                <p className="text-xl text-gray-400 line-through">{stringToPriceCOP(loanApplication.cantity)}</p>
+                                                <p className="text-xl text-green-600 font-semibold">{stringToPriceCOP(loanApplication.newCantity)}</p>
+                                            </div>
                                             {loanApplication.reasonChangeCantity && (
-                                                <span className="block text-xs text-gray-500 font-thin mt-1">
+                                                <p className="text-xs text-gray-500 font-thin mt-1">
                                                     Motivo: {loanApplication.reasonChangeCantity}
-                                                </span>
+                                                </p>
                                             )}
-                                        </p>
+                                        </>
+                                    ) : (
+                                        <p className="font-thin text-gray-600 text-xl">{stringToPriceCOP(loanApplication.cantity)}</p>
                                     )}
                                 </div>
                             </div>
+
 
                             <div className="flex items-center space-x-2">
                                 <FaEdit className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
@@ -185,14 +193,14 @@ function LoanData({ params }: LoanDataProps) {
                                             </>
                                         )}
                                         {loanApplication.status === "Aplazado" && (
-                                            <>
+                                            <div className="flex flex-col">
                                                 <p className="font-medium text-red-500">Rechazado</p>
                                                 {loanApplication.reasonReject && (
-                                                    <p className="text-xs text-gray-500 ml-2">
-                                                        Motivo: {loanApplication.reasonReject}
+                                                    <p className="text-xs font-bold text-gray-500">
+                                                        Motivo: <span className="font-thin">{loanApplication.reasonReject}</span>
                                                     </p>
                                                 )}
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -210,10 +218,10 @@ function LoanData({ params }: LoanDataProps) {
                         {/* Contenedor de imagen */}
                         <div className="relative p-4">
                             <div className="flex justify-center bg-gray-100">
-                                {user.Document && user.Document.length > 0 && (
+                                {client.Document && client.Document.length > 0 && (
                                     <div className="w-[320px] h-[260px] overflow-hidden rounded-md relative">
                                         <Image
-                                            src={user.Document[0].imageWithCC!}
+                                            src={client.Document[0].imageWithCC!}
                                             alt="Verificación con documento"
                                             width={400}
                                             height={400}
@@ -243,11 +251,11 @@ function LoanData({ params }: LoanDataProps) {
                                 <span className="text-sm">Método: Reconocimiento facial</span>
                             </div>
 
-                            {user.Document && user.Document.length > 0 && (
+                            {client.Document && client.Document.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <IoMdContact className="text-gray-600 text-lg" />
                                     <span className="text-sm">
-                                        {user.Document[0].typeDocument}: {user.Document[0].number}
+                                        {client.Document[0].typeDocument}: {client.Document[0].number}
                                     </span>
                                 </div>
                             )}
@@ -259,7 +267,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <div className="flex items-center gap-1">
                                     <IoMdInformationCircle className="text-gray-500" />
                                     <span className="text-xs text-gray-500">
-                                        {user.Document && user.Document.length > 0 ? `ID: ${user.Document[0].id.substring(0, 8)}` : "ID: No disponible"}
+                                        {client.Document && client.Document.length > 0 ? `ID: ${client.Document[0].id.substring(0, 8)}` : "ID: No disponible"}
                                     </span>
                                 </div>
                             </div>
@@ -304,10 +312,16 @@ function LoanData({ params }: LoanDataProps) {
                 {loanApplication.status === "Pendiente" && (
                     <div className="mt-6 flex flex-col md:flex-row gap-4">
                         <button
-                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center justify-center"
+                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition flex items-center justify-center cursor-pointer"
                             onClick={handleAccept}
                         >
-                            <FaCheckCircle className="mr-2" /> Aceptar
+                            {isAccepting ? (
+                                <FaSpinner className="mr-2 animate-spin" />
+                            ) : (
+                                <FaCheckCircle className="mr-2" />
+                            )}
+                            {isAccepting ? "Procesando..." : "Aceptar"}
+
                         </button>
                         <button
                             className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition flex items-center justify-center"
@@ -347,7 +361,7 @@ function LoanData({ params }: LoanDataProps) {
                                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
                                     onClick={handleReject}
                                 >
-                                    Listo
+                                    {isRejecting ? "Rechazando..." : "Listo"}
                                 </button>
                             </div>
                         </div>
