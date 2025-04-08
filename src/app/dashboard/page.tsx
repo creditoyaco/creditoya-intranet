@@ -1,147 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
 import Image from "next/image";
 import { FiUser, FiCreditCard, FiCalendar, FiCheckCircle } from "react-icons/fi";
 import { HiOutlineOfficeBuilding } from "react-icons/hi";
 import noLoans from "@/assets/ilustrations/no-loans.svg";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-
-// Updated interfaces to match the actual API response
-interface User {
-    id: string;
-    names: string;
-    firstLastName: string;
-    secondLastName?: string;
-    avatar: string;
-    email: string;
-    phone: string;
-    // Additional fields not used in the current UI
-}
-
-interface Document {
-    id: string;
-    userId: string;
-    typeDocument: string;
-    number: string;
-    documentSides: string;
-    imageWithCC: string;
-    // Other fields not shown in the UI
-}
-
-interface LoanApplication {
-    id: string;
-    userId: string;
-    cantity: string;
-    entity: string;
-    bankNumberAccount: string;
-    created_at: string;
-    status: string;
-    // Additional fields not used in the current UI
-}
-
-interface LoanItem {
-    id: string;
-    userId: string;
-    employeeId: string;
-    cantity: string;
-    entity: string;
-    bankSavingAccount: boolean;
-    bankNumberAccount: string;
-    status: string;
-    created_at: string;
-    // Additional fields from the API
-    fisrt_flyer: string | null;
-    second_flyer: string | null;
-    third_flyer: string | null;
-    signature: string;
-    // The nested objects
-    user: User & {
-        Document: Document[];
-    };
-}
-
-interface ApiResponse {
-    data: {
-        data: LoanItem[];
-        total: number;
-    };
-}
+import usePending from "@/hooks/dashboard/usePending";
 
 function DashboardPage() {
-    const router = useRouter();
-    const [pendingLoans, setPendingLoans] = useState<LoanItem[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(5);
-    const [totalLoans, setTotalLoans] = useState<number>(0);
-
-    useEffect(() => {
-        fetchPendingLoans();
-    }, [currentPage, pageSize]);
-
-    const fetchPendingLoans = async () => {
-        setLoading(true);
-        setError(null);
-
-        try {
-            const response = await axios.get<ApiResponse>(
-                `/api/dash/active?page=${currentPage}&pageSize=${pageSize}`
-            );
-
-            console.log("loans res: ", response.data);
-
-            if (response.data && response.data.data) {
-                setPendingLoans(response.data.data.data);
-                setTotalLoans(response.data.data.total);
-            } else {
-                setError("Error al cargar las solicitudes: respuesta inválida");
-                setPendingLoans([]);
-            }
-        } catch (err) {
-            setError("Error al conectar con el servidor");
-            setPendingLoans([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const formatCurrency = (value: string) => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0
-        }).format(parseFloat(value));
-    };
-
-    const formatBankName = (bankCode: string) => {
-        const banks: Record<string, string> = {
-            "bancolombia": "Bancolombia",
-            "banco-bogota": "Banco de Bogotá",
-            "davivienda": "Davivienda",
-            "bbva": "BBVA"
-            // Add more banks as needed
-        };
-        
-        return banks[bankCode] || bankCode;
-    };
-
-    const handlePageChange = (newPage: number) => {
-        setCurrentPage(newPage);
-    };
-
-    const totalPages = Math.ceil(totalLoans / pageSize);
-
+    const {
+        loading,
+        error,
+        fetchPendingLoans,
+        pendingLoans,
+        formatCurrency,
+        formatBankName,
+        router,
+        totalLoans,
+        totalPages,
+        handlePageChange,
+        currentPage,
+        UpdateIndicator
+    } = usePending();
+  
     return (
         <SidebarLayout>
             <div className="pt-20 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen overflow-scroll">
-                <header className="mb-8">
-                    <h1 className="text-xl sm:text-2xl font-medium text-gray-800">Solicitudes entrantes</h1>
-                    <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes que requieren revisión</p>
-                </header>
+                <div className="flex flex-row justify-between grow">
+                    <header className="mb-8">
+                        <h1 className="text-xl sm:text-2xl font-medium text-gray-800">Solicitudes entrantes</h1>
+                        <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes que requieren revisión</p>
+                    </header>
+                    <UpdateIndicator />
+                </div>
 
                 {loading ? (
                     <div className="flex items-center justify-center py-16 bg-white rounded-lg shadow-sm">
@@ -178,10 +69,10 @@ function DashboardPage() {
                         <div className="grid gap-4 mb-6">
                             {pendingLoans.map((item) => {
                                 // Get the first document or use a default
-                                const document = item.user.Document && item.user.Document.length > 0 
-                                    ? item.user.Document[0] 
+                                const document = item.user.Document && item.user.Document.length > 0
+                                    ? item.user.Document[0]
                                     : { typeDocument: "N/A", number: "N/A" };
-                                
+
                                 return (
                                     <div
                                         key={item.id}
@@ -260,11 +151,10 @@ function DashboardPage() {
                                     <button
                                         onClick={() => handlePageChange(currentPage - 1)}
                                         disabled={currentPage === 1}
-                                        className={`px-3 py-1 rounded-md text-sm ${
-                                            currentPage === 1
+                                        className={`px-3 py-1 rounded-md text-sm ${currentPage === 1
                                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                            }`}
                                     >
                                         Anterior
                                     </button>
@@ -272,11 +162,10 @@ function DashboardPage() {
                                         <button
                                             key={page}
                                             onClick={() => handlePageChange(page)}
-                                            className={`px-3 py-1 rounded-md text-sm ${
-                                                currentPage === page
+                                            className={`px-3 py-1 rounded-md text-sm ${currentPage === page
                                                     ? 'bg-green-500 text-white'
                                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
+                                                }`}
                                         >
                                             {page}
                                         </button>
@@ -284,11 +173,10 @@ function DashboardPage() {
                                     <button
                                         onClick={() => handlePageChange(currentPage + 1)}
                                         disabled={currentPage === totalPages}
-                                        className={`px-3 py-1 rounded-md text-sm ${
-                                            currentPage === totalPages
+                                        className={`px-3 py-1 rounded-md text-sm ${currentPage === totalPages
                                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                            }`}
                                     >
                                         Siguiente
                                     </button>

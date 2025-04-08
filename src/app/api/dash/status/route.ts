@@ -2,24 +2,30 @@ import { NextResponse } from 'next/server';
 import axios from 'axios';
 import { Status } from '@/types/loan';
 
-// Define una interfaz para la respuesta
+// Define a comprehensive type for the API response
 interface ApiResponse {
     success: boolean;
-    data?: any;
-    error?: any;
+    data?: any[];
+    error?: string;
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    totalPages?: number;
+    status?: string;
 }
 
 export async function GET(request: Request) {
-    // Extraer los parámetros de consulta de la URL
+    // Extract query parameters from URL
     const { searchParams } = new URL(request.url);
     const status: Status = searchParams.get('status') as Status;
     const page = Number(searchParams.get('page')) || 1;
-    const pageSize = Number(searchParams.get('pageSize')) || 5;
-    const documentNumber = searchParams.get('documentNumber') || undefined;
+    const pageSize = Number(searchParams.get('pageSize')) || 10;
+    const searchQuery = searchParams.get('search') || undefined;
 
     try {
         let endpoint = '';
 
+        // Map status to appropriate endpoint
         switch (status) {
             case "Aprobado":
                 endpoint = 'approved';
@@ -40,66 +46,58 @@ export async function GET(request: Request) {
                 endpoint = 'new-cantity';
                 break;
             default:
-                return NextResponse.json({ success: false, error: 'Estado inválido' }, { status: 400 });
+                return NextResponse.json({ 
+                    success: false, 
+                    error: `Estado inválido: ${status}` 
+                }, { status: 400 });
         }
 
-        // Construir la URL con los parámetros de consulta
-        let url = `${process.env.GATEWAY_API}/loans/${endpoint}?page=${page}&pageSize=${pageSize}`;
-
-        // Añadir el número de documento si está presente
-        if (documentNumber) {
-            url += `&documentNumber=${documentNumber}`;
+        // Build URL with query parameters
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            pageSize: pageSize.toString()
+        });
+        
+        if (searchQuery) {
+            queryParams.append('search', searchQuery);
         }
-
+        
+        const url = `${process.env.GATEWAY_API}/loans/${endpoint}?${queryParams.toString()}`;
         console.log(`Making request to: ${url}`);
 
-        // Realizar la petición a la API según el estado
+        // Make request to API
         const response = await axios.get(url);
-
-        // Log the response for debugging
-        console.log(`Received response with ${response.data?.data?.length || 0} items`);
-
-        // Transform the data to match the expected format in the frontend
-        let transformedData = [];
-
-        if (response.data && response.data.data && Array.isArray(response.data.data)) {
-            transformedData = response.data.data.map((item: any) => ({
-                user: {
-                    names: item.user.names,
-                    firstLastName: item.user.firstLastName,
-                    secondLastName: item.user.secondLastName,
-                    currentCompanie: item.user.currentCompanie,
-                    city: item.user.city
-                },
-                document: {
-                    typeDocument: item.user.Document && item.user.Document[0] ? item.user.Document[0].typeDocument : 'No definido',
-                    number: item.user.Document && item.user.Document[0] ? item.user.Document[0].number : 'No definido'
-                },
-                loanApplication: {
-                    id: item.id,
-                    cantity: item.cantity,
-                    newCantity: item.newCantity,
-                    newCantityOpt: item.newCantityOpt,
-                    status: item.status,
-                    created_at: item.created_at,
-                    reasonChangeCantity: item.reasonChangeCantity,
-                    reasonReject: item.reasonReject,
-                    entity: item.entity
-                }
-            }));
+        const responseData = response.data;
+        
+        // Validate response data
+        if (!responseData || !responseData.data) {
+            throw new Error('Invalid response format from API');
         }
 
-        // Construir la respuesta exitosa
+        // Transform data to match expected frontend format
+        const transformedData = Array.isArray(responseData.data) 
+            ? responseData.data.map(transformLoanData)
+            : [];
+
+        const total = responseData.total || transformedData.length;
+        const totalPages = Math.ceil(total / pageSize);
+
+        // Build successful response
         const apiResponse: ApiResponse = {
             success: true,
-            data: transformedData
+            data: transformedData,
+            total,
+            page,
+            pageSize,
+            totalPages,
+            status
         };
 
         return NextResponse.json(apiResponse);
     } catch (error) {
         console.error('API route error:', error);
 
-        // Manejar el error y construir la respuesta de error
+        // Handle error and build error response
         const apiResponse: ApiResponse = {
             success: false,
             error: error instanceof Error ? error.message : 'Error desconocido'
@@ -107,4 +105,35 @@ export async function GET(request: Request) {
 
         return NextResponse.json(apiResponse, { status: 500 });
     }
+}
+
+// Helper function to transform loan data for frontend
+function transformLoanData(item: any) {
+    // Safely extract document information
+    const documentInfo = item.user?.Document?.[0] || {};
+    
+    return {
+        user: {
+            names: item.user?.names || 'No definido',
+            firstLastName: item.user?.firstLastName || 'No definido',
+            secondLastName: item.user?.secondLastName || 'No definido',
+            currentCompanie: item.user?.currentCompanie || 'no',
+            city: item.user?.city || 'No definido'
+        },
+        document: {
+            typeDocument: documentInfo.typeDocument || 'No definido',
+            number: documentInfo.number || 'No definido'
+        },
+        loanApplication: {
+            id: item.id,
+            cantity: item.cantity,
+            newCantity: item.newCantity,
+            newCantityOpt: item.newCantityOpt,
+            status: item.status,
+            created_at: item.created_at,
+            reasonChangeCantity: item.reasonChangeCantity,
+            reasonReject: item.reasonReject,
+            entity: item.entity
+        }
+    };
 }

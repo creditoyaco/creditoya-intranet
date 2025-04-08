@@ -19,6 +19,8 @@ function useLoan({ loanId }: { loanId: string }) {
     const [isAccepting, setIsAccepting] = useState<boolean>(false);
     const [isRejecting, setIsRejecting] = useState<boolean>(false);
 
+    console.log(loanApplication?.user?.Document);
+
     const router = useRouter();
     const { user } = useAuth();
 
@@ -60,6 +62,7 @@ function useLoan({ loanId }: { loanId: string }) {
                         upSignatureId: loanData.upSignatureId ?? "", // Identificador de la firma
                         bankSavingAccount: loanData.bankSavingAccount ?? "", // Cuenta de ahorros
                         bankNumberAccount: loanData.bankNumberAccount ?? "", // Número de cuenta
+                        user: loanData.user ?? null,
                     });
                     setClient(loanData.user);
                 } else {
@@ -79,10 +82,15 @@ function useLoan({ loanId }: { loanId: string }) {
     }, [loanId]);
 
     const documents = loanApplication ? [
+        { name: "Cedula en ambos lados", url: loanApplication.user?.Document[0].documentSides },
         { name: "Primero volante de pago", url: loanApplication.fisrt_flyer },
         { name: "Segundo volante de pago", url: loanApplication.second_flyer },
         { name: "Tercer volante de pago", url: loanApplication.third_flyer },
         { name: "Carta laboral actualizada", url: loanApplication.labor_card },
+        { name: "Autorizacion centrales de riesgo", url: "" },
+        { name: "Carta instrucciones", url: "" },
+        { name: 'Autorizacion descuento nomina', url: ""},
+        { name: 'Pagare', url: ""}
     ] : [];
 
     const handleReject = async () => {

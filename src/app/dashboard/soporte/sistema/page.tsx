@@ -1,10 +1,13 @@
 "use client"
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { GoArrowUpRight } from "react-icons/go";
 
 function SystemAppsPage() {
+    const router = useRouter();
+
     // Estado para los servicios y su status
     const [services, setServices] = useState([
         { name: "Backend-core", status: "online", performance: "98%", lastCheck: "Hace 5 min" },
@@ -80,10 +83,13 @@ function SystemAppsPage() {
                                 </div>
                             )}
 
-                            {!service.performance && (
+                            {!service.performance && service.name === "Último Backup" && (
                                 <div className="text-right">
                                     <div className="flex flex-row">
-                                        <p className="text-sm text-gray-500 cursor-pointer hover:text-gray-700">Administrar</p>
+                                        <p
+                                        className="text-sm text-gray-500 cursor-pointer hover:text-gray-700"
+                                        onClick={() => router.push("/dashboard/soporte/sistema/backups")}
+                                        >Administrar</p>
                                     </div>
                                 </div>
                             )}

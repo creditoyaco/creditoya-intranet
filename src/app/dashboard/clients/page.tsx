@@ -3,7 +3,7 @@
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
 import useClient from "@/hooks/dashboard/useClients";
 import Image from "next/image";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiUser } from "react-icons/fi";
 
 function UserPage() {
     const {
@@ -53,31 +53,49 @@ function UserPage() {
                         <div className="w-full space-y-4">
                             {users && users.length > 0 ? (
                                 users.map((user, index) => (
-                                    <div key={user.id || index} className="flex flex-col sm:flex-row w-full border border-gray-100 rounded-lg hover:bg-gray-50">
-                                        <div className="flex items-center px-4 py-3 rounded-lg w-full">
-                                            <Image
-                                                src={user.avatar && user.avatar.startsWith("http") ? user.avatar : "/avatar-placeholder.png"}
-                                                alt="Avatar"
-                                                width={50}
-                                                height={50}
-                                                className="mr-4 rounded-lg"
-                                            />
-
-                                            <div className="flex-1">
-                                                <h3 className="text-lg font-medium text-gray-900">{user.names}</h3>
-                                                <p className="text-sm text-gray-600">{user.email}</p>
+                                    <div
+                                        key={user.id || index}
+                                        className="bg-white shadow-sm border border-gray-100 rounded-lg hover:shadow-md transition-all duration-200"
+                                    >
+                                        <div className="flex flex-col sm:flex-row items-center w-full p-4">
+                                            {/* Avatar Section */}
+                                            <div className="flex-shrink-0 mb-3 sm:mb-0 w-12 h-12 flex items-center justify-center">
+                                                {user.avatar && user.avatar.startsWith("http") ? (
+                                                    <Image
+                                                        src={user.avatar}
+                                                        alt={`${user.names} avatar`}
+                                                        width={48}
+                                                        height={48}
+                                                        className="rounded-full w-12 h-12 object-cover"
+                                                        onError={() => {/* This prevents console errors if image fails to load */ }}
+                                                    />
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
+                                                        <FiUser size={24} />
+                                                    </div>
+                                                )}
                                             </div>
-                                        </div>
-                                        <div className="flex flex-wrap sm:flex-nowrap p-4 gap-3 w-full sm:w-auto">
-                                            <button
-                                                onClick={() => router.push(`/dashboard/clients/${user.id}`)}
-                                                className="min-w-[140px] w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg text-xs shadow hover:bg-blue-600 transition"
-                                            >
-                                                Visitar Perfil
-                                            </button>
-                                            <button className="min-w-[140px] w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded-lg text-xs shadow hover:bg-green-600 transition">
-                                                Enviar Correo
-                                            </button>
+
+                                            {/* User Info Section */}
+                                            <div className="flex-1 text-center sm:text-left sm:ml-4">
+                                                <h3 className="font-medium text-gray-900 text-base">{user.names}</h3>
+                                                <p className="text-xs text-gray-500">{user.email}</p>
+                                            </div>
+
+                                            {/* Action Buttons */}
+                                            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-4 sm:mt-0 sm:ml-2">
+                                                <button
+                                                    onClick={() => router.push(`/dashboard/clients/${user.id}`)}
+                                                    className="px-4 py-2 bg-blue-500 text-white rounded-md text-xs font-medium hover:bg-blue-600 transition-colors"
+                                                >
+                                                    Perfil
+                                                </button>
+                                                <button
+                                                    className="px-4 py-2 bg-green-500 text-white rounded-md text-xs font-medium hover:bg-green-600 transition-colors"
+                                                >
+                                                    Contactar
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))
@@ -93,27 +111,25 @@ function UserPage() {
                                 <button
                                     onClick={prevPage}
                                     disabled={currentPage === 1}
-                                    className={`flex items-center justify-center px-4 py-2 border rounded-md text-sm transition-colors ${
-                                        currentPage === 1 
-                                        ? "border-gray-200 text-gray-300 cursor-not-allowed" 
+                                    className={`flex items-center justify-center px-4 py-2 border rounded-md text-sm transition-colors ${currentPage === 1
+                                        ? "border-gray-200 text-gray-300 cursor-not-allowed"
                                         : "border-gray-300 text-gray-600 hover:bg-gray-100"
-                                    }`}
+                                        }`}
                                 >
                                     Anterior
                                 </button>
-                                
+
                                 <div className="px-4 py-2 text-sm text-gray-600">
                                     Página {currentPage} de {totalPages}
                                 </div>
-                                
+
                                 <button
                                     onClick={nextPage}
                                     disabled={currentPage === totalPages}
-                                    className={`flex items-center justify-center px-4 py-2 border rounded-md text-sm transition-colors ${
-                                        currentPage === totalPages 
-                                        ? "border-gray-200 text-gray-300 cursor-not-allowed" 
+                                    className={`flex items-center justify-center px-4 py-2 border rounded-md text-sm transition-colors ${currentPage === totalPages
+                                        ? "border-gray-200 text-gray-300 cursor-not-allowed"
                                         : "border-gray-300 text-gray-600 hover:bg-gray-100"
-                                    }`}
+                                        }`}
                                 >
                                     Siguiente
                                 </button>

@@ -25,6 +25,9 @@ import useLoan from "@/hooks/dashboard/useLoan";
 import { use } from "react";
 import { stringToPriceCOP } from "@/handlers/StringToCOP";
 import { handleKeyToCompany } from "@/handlers/keyToCompany";
+import { BankTypes, handleKeyToStringBank } from "@/handlers/typeBank";
+import { RiBankFill } from "react-icons/ri";
+import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 
 interface LoanDataProps {
     params: Promise<{ loanId: string }>;
@@ -176,6 +179,21 @@ function LoanData({ params }: LoanDataProps) {
                                 </div>
                             </div>
 
+                            <div className="flex items-center space-x-2">
+                                <RiBankFill className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
+                                <div className="w-full">
+                                    <p className="text-sm text-gray-800">Entidad Bancaria</p>
+                                    <p className="font-thin text-gray-600">{handleKeyToStringBank(loanApplication.entity as BankTypes)}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                                <MdOutlineAccountBalanceWallet className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
+                                <div className="w-full">
+                                    <p className="text-sm text-gray-800">Numero de cuenta</p>
+                                    <p className="font-thin text-gray-600">{loanApplication.bankNumberAccount}</p>
+                                </div>
+                            </div>
 
                             <div className="flex items-center space-x-2">
                                 <FaEdit className="min-w-8 text-4xl text-gray-500 drop-shadow-md" />
@@ -208,7 +226,7 @@ function LoanData({ params }: LoanDataProps) {
                         </div>
                     </div>
 
-                    <div className="w-full md:w-[400px] flex-grow bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col min-h-[500px]">
+                    <div className="w-full md:w-[400px] flex-grow bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col max-h-[520px]">
                         {/* Encabezado */}
                         <div className="flex items-center gap-2 p-3 border-b border-gray-100">
                             <GoShieldCheck className="text-xl text-green-600" />

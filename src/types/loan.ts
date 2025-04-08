@@ -4,6 +4,7 @@ export type ScalarLoanApplication = {
     [x: string]: any;
     id?: string;
     userId: string;
+    user?: ScalarClient;
     employeeId?: string;
     fisrt_flyer: string;
     upid_first_flayer: string;

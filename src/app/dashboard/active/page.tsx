@@ -1,146 +1,23 @@
 "use client"
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
-import { useState, useEffect } from "react";
-import { FiSearch, FiUser, FiDollarSign, FiCalendar, FiFileText } from "react-icons/fi";
-import axios from "axios";
-
-interface User {
-    names: string;
-    firstLastName: string;
-    secondLastName: string;
-    currentCompanie: string;
-    city: string;
-}
-
-interface Document {
-    typeDocument: string;
-    number: string;
-}
-
-interface LoanApplication {
-    id: string;
-    cantity: string;
-    newCantity?: string;
-    newCantityOpt?: boolean;
-    status: string;
-    created_at: string;
-    reasonChangeCantity?: string;
-    reasonReject?: string;
-    entity: string;
-}
-
-interface LoanData {
-    user: User;
-    document: Document;
-    loanApplication: LoanApplication;
-}
+import useActives from "@/hooks/dashboard/useActives";
+import { FiSearch, FiUser, FiDollarSign, FiCalendar, FiFileText, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 function ActiveSection() {
-    const [activeTab, setActiveTab] = useState<'aprobados' | 'aplazados' | 'cambio'>('aprobados');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [loanData, setLoanData] = useState<LoanData[]>([]);
-    const [filteredData, setFilteredData] = useState<LoanData[]>([]);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                let statusParam = "";
-                switch (activeTab) {
-                    case 'aprobados':
-                        statusParam = "Aprobado";
-                        break;
-                    case 'aplazados':
-                        statusParam = "Aplazado";
-                        break;
-                    case 'cambio':
-                        statusParam = "New-cantity";
-                        break;
-                    default:
-                        statusParam = "Aprobado";
-                }
-
-                console.log(`Fetching data for status: ${statusParam}`);
-                const response = await axios.get(`/api/dash/status?status=${statusParam}&page=1&pageSize=10`);
-                console.log("API Response:", response.data);
-
-                if (response.data.success && Array.isArray(response.data.data)) {
-                    setLoanData(response.data.data);
-                    setFilteredData(response.data.data); // Initialize filtered data with all data
-                } else {
-                    console.warn("No data returned or invalid format:", response.data);
-                    setLoanData([]);
-                    setFilteredData([]);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-                setError("Error al cargar los datos. Por favor, intente de nuevo más tarde.");
-                setLoanData([]);
-                setFilteredData([]);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [activeTab]);
-
-    // Apply search filter separately
-    useEffect(() => {
-        if (!searchQuery.trim()) {
-            // If search is empty, show all data
-            setFilteredData(loanData);
-            return;
-        }
-
-        const query = searchQuery.toLowerCase().trim();
-        const filtered = loanData.filter(item =>
-            // Search by document number
-            item.document?.number?.toLowerCase().includes(query) ||
-            // Search by full name
-            `${item.user?.names} ${item.user?.firstLastName} ${item.user?.secondLastName}`.toLowerCase().includes(query) ||
-            // Search by loan ID
-            item.loanApplication?.id?.toLowerCase().includes(query)
-        );
-
-        setFilteredData(filtered);
-    }, [searchQuery, loanData]);
-
-    // Format date
-    const formatDate = (dateString: string) => {
-        if (!dateString) return "Fecha no disponible";
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-CO', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        } catch (e) {
-            return "Formato de fecha inválido";
-        }
-    };
-
-    // Format currency
-    const formatCurrency = (value: string) => {
-        if (!value) return "$0";
-        try {
-            const amount = parseFloat(value);
-            return new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
-        } catch (e) {
-            return "Valor inválido";
-        }
-    };
+    const {
+        activeTab,
+        setActiveTab,
+        searchQuery,
+        handleSearchChange,
+        isLoading,
+        error,
+        loanData,
+        formatCurrency,
+        formatDate,
+        pagination,
+        handlePageChange
+    } = useActives();
 
     return (
         <SidebarLayout>
@@ -199,7 +76,7 @@ function ActiveSection() {
                         className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Busca por Numero de documento / Nombre completo / ID solicitud"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={handleSearchChange}
                     />
                 </div>
 
@@ -218,60 +95,95 @@ function ActiveSection() {
                             </div>
                             <p className="text-gray-500 font-medium text-center">{error}</p>
                         </div>
-                    ) : filteredData.length > 0 ? (
-                        <div className="space-y-4">
-                            {filteredData.map((item) => (
-                                <div key={item.loanApplication.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                    <div className="flex flex-col md:flex-row md:justify-between md:items-center">
-                                        <div className="mb-3 md:mb-0">
-                                            <div className="flex items-center mb-2">
-                                                <FiUser className="mr-2 text-gray-500" />
-                                                <h3 className="font-semibold text-lg">{`${item.user.names} ${item.user.firstLastName} ${item.user.secondLastName}`}</h3>
-                                            </div>
-                                            <div className="flex items-center text-sm text-gray-600">
-                                                <FiFileText className="mr-2" />
-                                                <span>{`${item.document.typeDocument}: ${item.document.number}`}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center mb-1">
-                                                <FiDollarSign className="mr-1 text-gray-500" />
-                                                <span className="font-medium">{formatCurrency(item.loanApplication.cantity)}</span>
-                                            </div>
-                                            {item.loanApplication.newCantity && (
-                                                <div className="flex items-center text-sm text-blue-600">
-                                                    <span className="font-medium">Nuevo: {formatCurrency(item.loanApplication.newCantity)}</span>
+                    ) : loanData.length > 0 ? (
+                        <>
+                            <div className="space-y-4">
+                                {loanData.map((item) => (
+                                    <div key={item.loanApplication.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                        <div className="flex flex-col md:flex-row md:justify-between md:items-center">
+                                            <div className="mb-3 md:mb-0">
+                                                <div className="flex items-center mb-2">
+                                                    <FiUser className="mr-2 text-gray-500" />
+                                                    <h3 className="font-semibold text-lg">{`${item.user.names} ${item.user.firstLastName} ${item.user.secondLastName}`}</h3>
                                                 </div>
-                                            )}
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <FiFileText className="mr-2" />
+                                                    <span>{`${item.document.typeDocument}: ${item.document.number}`}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col">
+                                                <div className="flex items-center mb-1">
+                                                    <FiDollarSign className="mr-1 text-gray-500" />
+                                                    <span className="font-medium">{formatCurrency(item.loanApplication.cantity)}</span>
+                                                </div>
+                                                {item.loanApplication.newCantity && (
+                                                    <div className="flex items-center text-sm text-blue-600">
+                                                        <span className="font-medium">Nuevo: {formatCurrency(item.loanApplication.newCantity)}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
+
+                                        <div className="mt-3 flex flex-wrap justify-between items-center">
+                                            <div className="flex items-center text-sm text-gray-600 mb-2 md:mb-0">
+                                                <FiCalendar className="mr-1" />
+                                                <span>{formatDate(item.loanApplication.created_at)}</span>
+                                            </div>
+
+                                            <div className="flex items-center">
+                                                <span className="text-sm mr-2">{item.user.currentCompanie || 'No definido'}</span>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium
+                                                        ${item.loanApplication.status === 'Aprobado' ? 'bg-green-100 text-green-800' :
+                                                        item.loanApplication.status === 'Aplazado' ? 'bg-red-100 text-red-800' :
+                                                            'bg-yellow-100 text-yellow-800'}`}>
+                                                    {item.loanApplication.status}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {(item.loanApplication.reasonChangeCantity || item.loanApplication.reasonReject) && (
+                                            <div className="mt-2 text-sm italic text-gray-600 border-t pt-2">
+                                                <span>Motivo: {item.loanApplication.reasonChangeCantity || item.loanApplication.reasonReject}</span>
+                                            </div>
+                                        )}
                                     </div>
+                                ))}
+                            </div>
 
-                                    <div className="mt-3 flex flex-wrap justify-between items-center">
-                                        <div className="flex items-center text-sm text-gray-600 mb-2 md:mb-0">
-                                            <FiCalendar className="mr-1" />
-                                            <span>{formatDate(item.loanApplication.created_at)}</span>
-                                        </div>
+                            {/* Pagination Controls */}
+                            {pagination.totalPages > 1 && (
+                                <div className="flex justify-center mt-6 gap-2">
+                                    <button
+                                        onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                        disabled={pagination.currentPage === 1}
+                                        className={`flex items-center px-3 py-1 rounded ${pagination.currentPage === 1
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                            }`}
+                                    >
+                                        <FiChevronLeft size={16} />
+                                        <span className="ml-1">Anterior</span>
+                                    </button>
 
-                                        <div className="flex items-center">
-                                            <span className="text-sm mr-2">{item.user.currentCompanie || 'No definido'}</span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-medium
-                                                    ${item.loanApplication.status === 'Aprobado' ? 'bg-green-100 text-green-800' :
-                                                    item.loanApplication.status === 'Aplazado' ? 'bg-red-100 text-red-800' :
-                                                        'bg-yellow-100 text-yellow-800'}`}>
-                                                {item.loanApplication.status}
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <span className="flex items-center px-3 py-1 bg-gray-100">
+                                        Página {pagination.currentPage} de {pagination.totalPages}
+                                    </span>
 
-                                    {(item.loanApplication.reasonChangeCantity || item.loanApplication.reasonReject) && (
-                                        <div className="mt-2 text-sm italic text-gray-600 border-t pt-2">
-                                            <span>Motivo: {item.loanApplication.reasonChangeCantity || item.loanApplication.reasonReject}</span>
-                                        </div>
-                                    )}
+                                    <button
+                                        onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                        disabled={pagination.currentPage === pagination.totalPages}
+                                        className={`flex items-center px-3 py-1 rounded ${pagination.currentPage === pagination.totalPages
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                            }`}
+                                    >
+                                        <span className="mr-1">Siguiente</span>
+                                        <FiChevronRight size={16} />
+                                    </button>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        </>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-12">
                             <div className="text-gray-400 mb-2">
@@ -292,7 +204,7 @@ function ActiveSection() {
                             </div>
                             <p className="text-gray-500 font-medium text-center">No hay solicitudes en este estado</p>
                             <p className="text-gray-400 text-sm text-center mt-1">
-                                Las solicitudes aparecerán aquí cuando estén disponibles
+                                {searchQuery ? 'No se encontraron resultados para tu búsqueda' : 'Las solicitudes aparecerán aquí cuando estén disponibles'}
                             </p>
                         </div>
                     )}
