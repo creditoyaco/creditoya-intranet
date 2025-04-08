@@ -304,7 +304,7 @@ function LoanData({ params }: LoanDataProps) {
                                 <div className="flex gap-2">
                                     <button
                                         className="px-3 gap-1 bg-blue-400 text-white rounded hover:bg-blue-600 transition flex flex-row"
-                                        onClick={() => setSelectedDocument(doc.url)}
+                                        onClick={() => setSelectedDocument(doc.url as string)}
                                     >
                                         <p className="grid place-content-center text-sm font-thin">Visualizar</p>
                                     </button>
