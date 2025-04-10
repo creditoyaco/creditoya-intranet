@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ScalarLoanApplication, Status } from '@/types/loan';
@@ -137,7 +139,7 @@ function useProof() {
         results: null
       });
 
-      const response = await axios.post('/api/dash/pdfs/generate-pending');
+      const response = await axios.post('/api/dash/pdfs/generate-all-pending');
 
       await fetchPendingDocumentsLoans();
       await fetchLoans(selectedStatus);
