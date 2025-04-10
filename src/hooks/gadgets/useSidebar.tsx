@@ -73,7 +73,13 @@ function useSideBar() {
             setActivePage('clientes');
         } else if (pathname === "/dashboard/herramientas") {
             setActivePage('herramientas');
-        } else if (pathname === "/dashboard/novedades") {
+        } else if (pathname === "/dashboard/soporte") {
+            setActivePage('soporte');
+        } else if (pathname === "/dashboard/comprobantes") {
+            setActivePage('comprobantes')
+        } else if (pathname === "/dashboard/soporte/sistema") {
+            setActivePage('soporte');
+        } else if (pathname === "/dashboard/soporte/error") {
             setActivePage('soporte');
         }
 
