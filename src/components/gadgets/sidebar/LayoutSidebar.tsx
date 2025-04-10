@@ -85,12 +85,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                             onClick={() => selectOption('comprobantes')}
                         />
                         <SidebarItem
-                            icon={<FiTool size={20} />}
-                            text="Herramientas"
-                            isActive={activePage === 'herramientas'}
-                            onClick={() => selectOption('herramientas')}
-                        />
-                        <SidebarItem
                             icon={<GrBook size={20} />}
                             text="Documentacion"
                             isActive={activePage === 'manual'}
@@ -163,11 +157,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                             icon={<LiaFileInvoiceDollarSolid size={20} />}
                             isActive={activePage === 'comprobantes'}
                             onClick={() => selectOption('comprobantes')}
-                        />
-                        <IconSidebarItem
-                            icon={<FiTool size={20} />}
-                            isActive={activePage === 'herramientas'}
-                            onClick={() => handleIconSidebarClick('herramientas')}
                         />
                         <IconSidebarItem
                             icon={<GrBook size={20} />}

@@ -7,7 +7,6 @@ export type optionTypes =
     "solicitudes" |
     "prestamos" |
     "clientes" |
-    "herramientas" |
     "soporte" |
     "comprobantes" |
     "manual";
@@ -71,8 +70,6 @@ function useSideBar() {
             setActivePage('prestamos');
         } else if (pathname === "/dashboard/clients") {
             setActivePage('clientes');
-        } else if (pathname === "/dashboard/herramientas") {
-            setActivePage('herramientas');
         } else if (pathname === "/dashboard/soporte") {
             setActivePage('soporte');
         } else if (pathname === "/dashboard/comprobantes") {
@@ -104,8 +101,6 @@ function useSideBar() {
             router.push("/dashboard/active");
         } else if (option === "clientes") {
             router.push("/dashboard/clients");
-        } else if (option === "herramientas") {
-            router.push("/dashboard/herramientas");
         } else if (option === "solicitudes") {
             router.push("/dashboard");
         } else if (option === "soporte") {
