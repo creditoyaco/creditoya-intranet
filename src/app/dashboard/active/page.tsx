@@ -1,6 +1,7 @@
 "use client"
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
+import { handleKeyToCompany } from "@/handlers/keyToCompany";
 import useActives from "@/hooks/dashboard/useActives";
 import { FiSearch, FiUser, FiDollarSign, FiCalendar, FiFileText, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
@@ -132,7 +133,7 @@ function ActiveSection() {
                                             </div>
 
                                             <div className="flex items-center">
-                                                <span className="text-sm mr-2">{item.user.currentCompanie || 'No definido'}</span>
+                                                <span className="text-sm mr-2">{handleKeyToCompany(item.user.currentCompanie)}</span>
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium
                                                         ${item.loanApplication.status === 'Aprobado' ? 'bg-green-100 text-green-800' :
                                                         item.loanApplication.status === 'Aplazado' ? 'bg-red-100 text-red-800' :
