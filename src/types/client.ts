@@ -1,4 +1,5 @@
 import { ScalarDocument } from "./documents";
+import { ScalarLoanApplication } from "./loan";
 
 export type ScalarClient = {
     id?: string;
@@ -20,6 +21,7 @@ export type ScalarClient = {
     city?: string;
     isBan?: boolean;
     Document: ScalarDocument[];
+    LoanApplication: ScalarLoanApplication[]
     createdAt?: Date;
     updatedAt?: Date;
 };

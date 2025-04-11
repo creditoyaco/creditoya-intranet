@@ -1,5 +1,6 @@
 "use client";
 
+import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
 import { useAuth } from "@/context/useAuth";
 import { ScalarClient } from "@/types/client";
 import axios from "axios";
@@ -18,6 +19,12 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
     const { accessToken } = useAuth();
     const [clientData, setClientData] = useState<ScalarClient | null>(null);
     const [clientId, setClientId] = useState<string | null>(null);
+    
+    // For edit functionality
+    const [editableData, setEditableData] = useState<ScalarClient | null>(null);
+    const [isSaving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Resolver el parámetro de cliente (client_id)
     useEffect(() => {
@@ -49,6 +56,7 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
                 );
                 if (response.data.success) {
                     setClientData(response.data.data);
+                    setEditableData(response.data.data); // Initialize editable data
                 } else {
                     setError("No se encontró información del cliente.");
                 }
@@ -109,6 +117,58 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
         fetchUsers();
     }, [currentPage, accessToken, searchQuery]);
 
+    // Helper to check if avatar URL is valid
+    const isValidAvatarUrl = (url: string | undefined | null): boolean => {
+        if (!url || url === "No definido") return false;
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const handleChange = (field: keyof ScalarClient, value: any) => {
+        if (editableData) {
+            setEditableData({ ...editableData, [field]: value });
+        }
+    };
+
+    const handleUpdateClient = async () => {
+        if (!editableData || !accessToken) return;
+
+        setSaving(true);
+        setSaveError(null);
+        setSaveSuccess(false);
+
+        try {
+            const response = await axios.put(
+                `/api/dash/clients`,
+                { client: editableData },
+                {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                    timeout: 15000
+                }
+            );
+
+            if (response.data.success) {
+                setSaveSuccess(true);
+                setClientData(editableData); // Update the main client data
+                setTimeout(() => setSaveSuccess(false), 3000);
+            } else {
+                setSaveError(response.data.error || "Error al actualizar la información.");
+            }
+        } catch (err: any) {
+            if (err.code === 'ECONNABORTED') {
+                setSaveError("La solicitud ha tardado demasiado tiempo. Por favor, inténtalo de nuevo.");
+            } else {
+                setSaveError(err.response?.data?.error || err.message || "Error al conectar con el servidor.");
+            }
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const nextPage = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
@@ -117,7 +177,35 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
         if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
+    // Render loading state for client details
+    const renderLoadingState = () => (
+        <SidebarLayout>
+            <div className="p-4 md:p-6">
+                <p>Cargando información del cliente...</p>
+            </div>
+        </SidebarLayout>
+    );
+
+    // Render error state for client details
+    const renderErrorState = () => (
+        <SidebarLayout>
+            <div className="p-4 md:p-6">
+                <p className="text-red-500">{error}</p>
+            </div>
+        </SidebarLayout>
+    );
+
+    // Render no data state for client details
+    const renderNoDataState = () => (
+        <SidebarLayout>
+            <div className="p-4 md:p-6">
+                <p>No se encontró información.</p>
+            </div>
+        </SidebarLayout>
+    );
+
     return {
+        // Original useClient return values
         searchQuery,
         setSearchQuery,
         loading,
@@ -128,7 +216,21 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
         totalPages,
         prevPage,
         nextPage,
-        clientData
+        clientData,
+        
+        // New useOnlyClient return values
+        isValidAvatarUrl,
+        editableData,
+        handleChange,
+        saveError,
+        saveSuccess,
+        isSaving,
+        handleUpdateClient,
+        
+        // UI helpers
+        renderLoadingState,
+        renderErrorState,
+        renderNoDataState
     };
 }
 
