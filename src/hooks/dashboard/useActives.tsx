@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { debounce } from "lodash";
 import { IoReloadOutline } from "react-icons/io5";
+import { useRouter } from "next/navigation";
 
 interface User {
     names: string;
@@ -50,6 +51,8 @@ function useActives() {
     const [searchTerm, setSearchTerm] = useState('');
     // Estado visual del input
     const [inputValue, setInputValue] = useState('');
+
+    const router = useRouter()
 
     const [activeTab, setActiveTab] = useState<'aprobados' | 'aplazados' | 'cambio'>('aprobados');
     const [isLoading, setIsLoading] = useState(true);
@@ -269,7 +272,8 @@ function useActives() {
         setActiveTab,
         getTimeSinceUpdate,
         handleManualRefresh,
-        UpdateIndicator
+        UpdateIndicator,
+        router,
     };
 }
 

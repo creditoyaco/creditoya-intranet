@@ -28,8 +28,65 @@ function ActiveSection() {
         formatDate,
         pagination,
         handlePageChange,
-        UpdateIndicator
+        UpdateIndicator,
+        router
     } = useActives();
+
+    console.log(pagination);
+
+    // Función para generar números de página para paginación
+    const getPageNumbers = () => {
+        const totalPages = pagination.totalPages;
+        const currentPage = pagination.currentPage;
+        const maxPageNumbers = 5;
+        const pageNumbers = [];
+
+        if (totalPages <= maxPageNumbers) {
+            // Mostrar todos los números de página si el total es menor que maxPageNumbers
+            for (let i = 1; i <= totalPages; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            // Incluir siempre primera página, última página, página actual y
+            // una o dos páginas a cada lado de la página actual
+
+            let startPage = Math.max(2, currentPage - 1);
+            let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+            // Ajustar si currentPage está cerca del principio
+            if (currentPage <= 2) {
+                endPage = Math.min(totalPages - 1, 4);
+            }
+
+            // Ajustar si currentPage está cerca del final
+            if (currentPage >= totalPages - 1) {
+                startPage = Math.max(2, totalPages - 3);
+            }
+
+            // Incluir siempre la página 1
+            pageNumbers.push(1);
+
+            // Añadir elipsis si es necesario
+            if (startPage > 2) {
+                pageNumbers.push('...');
+            }
+
+            // Añadir páginas intermedias
+            for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+            }
+
+            // Añadir elipsis si es necesario
+            if (endPage < totalPages - 1) {
+                pageNumbers.push('...');
+            }
+
+            // Incluir siempre la última página
+            pageNumbers.push(totalPages);
+        }
+
+        return pageNumbers;
+    };
 
     return (
         <SidebarLayout>
@@ -56,8 +113,8 @@ function ActiveSection() {
                         <button
                             onClick={() => setActiveTab('aprobados')}
                             className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'aprobados'
-                                    ? 'bg-green-500 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Aprobados
@@ -66,8 +123,8 @@ function ActiveSection() {
                         <button
                             onClick={() => setActiveTab('aplazados')}
                             className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'aplazados'
-                                    ? 'bg-red-500 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-red-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Aplazados
@@ -76,8 +133,8 @@ function ActiveSection() {
                         <button
                             onClick={() => setActiveTab('cambio')}
                             className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'cambio'
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Ajuste
@@ -140,7 +197,7 @@ function ActiveSection() {
                         <>
                             <div className="space-y-4">
                                 {loanData.map((item) => (
-                                    <div key={item.loanApplication.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div onClick={() => router.push(`/dashboard/loan/${item.loanApplication.id}`)} key={item.loanApplication.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                                         <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                                             <div className="mb-3 md:mb-0">
                                                 <div className="flex items-center mb-2">
@@ -176,10 +233,10 @@ function ActiveSection() {
                                                 <span className="text-sm mr-2">{handleKeyToCompany(item.user.currentCompanie)}</span>
                                                 <span
                                                     className={`px-3 py-1 rounded-full text-xs font-medium ${item.loanApplication.status === 'Aprobado'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : item.loanApplication.status === 'Aplazado'
-                                                                ? 'bg-red-100 text-red-800'
-                                                                : 'bg-yellow-100 text-yellow-800'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : item.loanApplication.status === 'Aplazado'
+                                                            ? 'bg-red-100 text-red-800'
+                                                            : 'bg-yellow-100 text-yellow-800'
                                                         }`}
                                                 >
                                                     {item.loanApplication.status}
@@ -196,35 +253,63 @@ function ActiveSection() {
                                 ))}
                             </div>
 
-                            {/* Pagination Controls */}
+                            {/* Controles de paginación simplificados */}
                             {pagination.totalPages > 1 && (
-                                <div className="flex justify-center mt-6 gap-2">
+                                <div className="flex justify-center mt-8 mb-4">
+                                    {/* Botón Anterior */}
                                     <button
                                         onClick={() => handlePageChange(pagination.currentPage - 1)}
                                         disabled={pagination.currentPage === 1}
-                                        className={`flex items-center px-3 py-1 rounded ${pagination.currentPage === 1
+                                        className={`flex items-center px-4 py-2 rounded-l-lg border ${pagination.currentPage === 1
                                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
                                             }`}
                                     >
-                                        <FiChevronLeft size={16} />
-                                        <span className="ml-1">Anterior</span>
+                                        <FiChevronLeft className="mr-2" />
+                                        Anterior
                                     </button>
 
-                                    <span className="flex items-center px-3 py-1 bg-gray-100">
-                                        Página {pagination.currentPage} de {pagination.totalPages}
-                                    </span>
+                                    {/* Indicador de página y páginas numéricas */}
+                                    <div className="hidden md:flex">
+                                        {getPageNumbers().map((page, index) => (
+                                            typeof page === 'number' ? (
+                                                <button
+                                                    key={`page-${page}`}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className={`px-4 py-2 border-t border-b ${pagination.currentPage === page
+                                                            ? 'bg-blue-500 text-white'
+                                                            : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            ) : (
+                                                <span
+                                                    key={`ellipsis-${index}`}
+                                                    className="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700"
+                                                >
+                                                    {page}
+                                                </span>
+                                            )
+                                        ))}
+                                    </div>
 
+                                    {/* Indicador móvil simple */}
+                                    <div className="md:hidden flex items-center px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700">
+                                        {pagination.currentPage} / {pagination.totalPages}
+                                    </div>
+
+                                    {/* Botón Siguiente */}
                                     <button
                                         onClick={() => handlePageChange(pagination.currentPage + 1)}
                                         disabled={pagination.currentPage === pagination.totalPages}
-                                        className={`flex items-center px-3 py-1 rounded ${pagination.currentPage === pagination.totalPages
+                                        className={`flex items-center px-4 py-2 rounded-r-lg border ${pagination.currentPage === pagination.totalPages
                                                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
                                             }`}
                                     >
-                                        <span className="mr-1">Siguiente</span>
-                                        <FiChevronRight size={16} />
+                                        Siguiente
+                                        <FiChevronRight className="ml-2" />
                                     </button>
                                 </div>
                             )}

@@ -1,3 +1,5 @@
+"use client"
+
 import { useAuth } from "@/context/useAuth";
 import { ScalarClient } from "@/types/client";
 import { ScalarLoanApplication } from "@/types/loan";
@@ -30,8 +32,10 @@ function useLoan({ loanId }: { loanId: string }) {
                 setLoading(true);
                 const response = await axios.get(`/api/dash/loan?loan_id=${loanId}`);
 
+                console.log(response)
+
                 if (response.data.success) {
-                    const loanData = response.data.data;
+                    const loanData: ScalarLoanApplication = response.data.data;
                     setLoanApplication({
                         id: loanData.id,
                         status: loanData.status,
@@ -62,9 +66,12 @@ function useLoan({ loanId }: { loanId: string }) {
                         upSignatureId: loanData.upSignatureId ?? "", // Identificador de la firma
                         bankSavingAccount: loanData.bankSavingAccount ?? "", // Cuenta de ahorros
                         bankNumberAccount: loanData.bankNumberAccount ?? "", // Número de cuenta
-                        user: loanData.user ?? null,
+                        user: loanData.user,
+                        GeneratedDocuments: Array.isArray(loanData.GeneratedDocuments) && loanData.GeneratedDocuments.length > 0 
+                            ? loanData.GeneratedDocuments[0] 
+                            : undefined
                     });
-                    setClient(loanData.user);
+                    setClient(loanData.user as ScalarClient);
                 } else {
                     setError("No se pudo obtener la información del préstamo");
                 }
@@ -87,10 +94,10 @@ function useLoan({ loanId }: { loanId: string }) {
         { name: "Segundo volante de pago", url: loanApplication.second_flyer },
         { name: "Tercer volante de pago", url: loanApplication.third_flyer },
         { name: "Carta laboral actualizada", url: loanApplication.labor_card },
-        { name: "Autorizacion centrales de riesgo", url: "" },
-        { name: "Carta instrucciones", url: "" },
-        { name: 'Autorizacion descuento nomina', url: ""},
-        { name: 'Pagare', url: ""}
+        // { name: "Autorizacion centrales de riesgo", url: "" },
+        // { name: "Carta instrucciones", url: "" },
+        // { name: 'Autorizacion descuento nomina', url: ""},
+        // { name: 'Pagare', url: ""}
     ] : [];
 
     const handleReject = async () => {
@@ -168,6 +175,8 @@ function useLoan({ loanId }: { loanId: string }) {
             console.error("Error al aceptar el préstamo:", error);
         }
     };
+
+    console.log("docs autogen", loanApplication)
 
     return {
         loading,

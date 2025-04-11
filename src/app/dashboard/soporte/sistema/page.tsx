@@ -10,10 +10,10 @@ function SystemAppsPage() {
 
     // Estado para los servicios y su status
     const [services, setServices] = useState([
-        { name: "Backend-core", status: "online", performance: "98%", lastCheck: "Hace 5 min" },
-        { name: "Aplicación clientes", status: "online", performance: "95%", lastCheck: "Hace 3 min" },
-        { name: "Aplicación intranet", status: "warning", performance: "87%", lastCheck: "Hace 2 min" },
-        { name: "Base de datos", status: "online", performance: "99%", lastCheck: "Hace 1 min" },
+        // { name: "Backend-core", status: "online", performance: "98%", lastCheck: "Hace 5 min" },
+        // { name: "Aplicación clientes", status: "online", performance: "95%", lastCheck: "Hace 3 min" },
+        // { name: "Aplicación intranet", status: "warning", performance: "87%", lastCheck: "Hace 2 min" },
+        // { name: "Base de datos", status: "online", performance: "99%", lastCheck: "Hace 1 min" },
         { name: "Último Backup", status: "completed", performance: "", lastCheck: "Hace 2 horas" }
     ]);
 
@@ -95,25 +95,6 @@ function SystemAppsPage() {
                             )}
                         </div>
                     ))}
-                </div>
-
-                <div className="mt-6 flex items-center text-sm text-gray-600">
-                    <div className="flex items-center mr-4">
-                        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                        <span>Online</span>
-                    </div>
-                    <div className="flex items-center mr-4">
-                        <div className="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>
-                        <span>Advertencia</span>
-                    </div>
-                    <div className="flex items-center mr-4">
-                        <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
-                        <span>Offline</span>
-                    </div>
-                    <div className="flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                        <span>Completado</span>
-                    </div>
                 </div>
             </div>
         </SidebarLayout>

@@ -27,9 +27,23 @@ export type ScalarLoanApplication = {
     entity: string;
     terms_and_conditions: boolean;
     clientInfo?: ScalarClient;
+    GeneratedDocuments?: GeneratedDocuments
     created_at: Date;
     updated_at: Date;
 };
+
+export type GeneratedDocuments = {
+    id: string
+    loanId: string
+    loan: ScalarLoanApplication
+    uploadId: string
+    publicUrl?: string
+    fileType: string
+    documentTypes: string[]
+    downloadCount: number
+    created_at: Date
+    updated_at: Date
+}
 
 export type Status =
     | "Pendiente"
