@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import axios from "axios";
-import Fuse from "fuse.js";
 
 interface ApiResponse<T> {
     success: boolean;
@@ -30,7 +29,7 @@ export async function GET(request: Request) {
         const clientId = searchParams.get("client_id");
         const page = Number(searchParams.get("page") || "1");
         const pageSize = Number(searchParams.get("pageSize") || "10");
-        const search = searchParams.get("search")?.trim().toLowerCase();
+        const search = searchParams.get("search");
 
         // Validate pagination parameters
         if (!Number.isInteger(page) || !Number.isInteger(pageSize) || page < 1 || pageSize < 1) {
@@ -55,9 +54,15 @@ export async function GET(request: Request) {
             throw new Error("GATEWAY_API environment variable is not defined");
         }
 
-        const apiUrl = clientId
+        // Construir la URL con los parámetros
+        let apiUrl = clientId
             ? `${baseUrl}/clients/${encodeURIComponent(clientId)}`
             : `${baseUrl}/clients?page=${page}&pageSize=${pageSize}`;
+
+        // Añadir el parámetro de búsqueda si existe
+        if (!clientId && search) {
+            apiUrl += `&search=${encodeURIComponent(search.trim())}`;
+        }
 
         // Fetch data
         const response = await axios.get(apiUrl, {
@@ -65,23 +70,10 @@ export async function GET(request: Request) {
             timeout: 5000 // 5 seconds timeout
         });
 
-        // Process response
-        let responseData = response.data;
-
-        // Apply search filter if needed
-        if (!clientId && search && Array.isArray(responseData.users)) {
-            const filtered = filterClientData(responseData.users, search);
-            responseData = {
-                ...responseData,
-                users: filtered,
-                totalCount: filtered.length,
-                filteredResults: true
-            };
-        }
-
-        return NextResponse.json<ApiResponse<typeof responseData>>({
+        // Return the response data directly from the backend
+        return NextResponse.json<ApiResponse<typeof response.data>>({
             success: true,
-            data: responseData,
+            data: response.data,
         });
 
     } catch (error) {
@@ -103,38 +95,4 @@ export async function GET(request: Request) {
             { status: 500 }
         );
     }
-}
-
-/**
- * Filters client data based on a search query using fuzzy search
- * @param clients - Array of client objects
- * @param query - Search query string
- * @returns Filtered array of clients
- */
-function filterClientData(clients: Client[], query: string): Client[] {
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) return clients;
-
-    const fuseOptions = {
-        keys: [
-            { name: "name", weight: 0.7 },      // Higher weight for name
-            { name: "email", weight: 0.4 },     // Medium weight for email
-            { name: "id", weight: 0.3 },        // Lower weight for ID
-            { name: "phone", weight: 0.2 },     // Lower weight for phone
-        ],
-        threshold: 0.2,            // More strict matching (lower = more precise)
-        distance: 100,             // Consider the entire field length
-        ignoreLocation: true,      // Match can occur anywhere in the string
-        includeScore: true,        // Include match score
-        useExtendedSearch: true,   // Enable extended search
-        minMatchCharLength: 2      // Minimum character length before considering a match
-    };
-
-    const fuse = new Fuse(clients, fuseOptions);
-    const results = fuse.search(trimmedQuery);
-
-    // Only return results with reasonable match quality (lower score = better match)
-    return results
-        .filter(result => result.score !== undefined && result.score < 0.5)
-        .map(result => result.item);
 }

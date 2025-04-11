@@ -257,7 +257,6 @@ function useActives() {
 
     return {
         activeTab,
-        // Se expone inputValue como searchQuery para compatibilidad con el componente
         searchQuery: inputValue,
         isLoading,
         loanData,

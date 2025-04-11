@@ -88,6 +88,8 @@ function ActiveSection() {
         return pageNumbers;
     };
 
+    console.log(pagination)
+
     return (
         <SidebarLayout>
             <div className="pt-20 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen overflow-scroll">
@@ -253,66 +255,68 @@ function ActiveSection() {
                                 ))}
                             </div>
 
-                            {/* Controles de paginación simplificados */}
-                            {pagination.totalPages > 1 && (
-                                <div className="flex justify-center mt-8 mb-4">
-                                    {/* Botón Anterior */}
-                                    <button
-                                        onClick={() => handlePageChange(pagination.currentPage - 1)}
-                                        disabled={pagination.currentPage === 1}
-                                        className={`flex items-center px-4 py-2 rounded-l-lg border ${pagination.currentPage === 1
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                                            }`}
-                                    >
-                                        <FiChevronLeft className="mr-2" />
-                                        Anterior
-                                    </button>
+                            <div className="flex justify-center mt-8 mb-4">
+                                {/* Botón Anterior */}
+                                <button
+                                    onClick={() => handlePageChange(pagination.currentPage - 1)}
+                                    disabled={pagination.currentPage === 1}
+                                    className={`flex items-center px-4 py-2 rounded-l-lg border ${pagination.currentPage === 1
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                                        }`}
+                                >
+                                    <FiChevronLeft className="mr-2" />
+                                    Anterior
+                                </button>
 
-                                    {/* Indicador de página y páginas numéricas */}
-                                    <div className="hidden md:flex">
-                                        {getPageNumbers().map((page, index) => (
-                                            typeof page === 'number' ? (
-                                                <button
-                                                    key={`page-${page}`}
-                                                    onClick={() => handlePageChange(page)}
-                                                    className={`px-4 py-2 border-t border-b ${pagination.currentPage === page
-                                                            ? 'bg-blue-500 text-white'
-                                                            : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                                                        }`}
-                                                >
-                                                    {page}
-                                                </button>
-                                            ) : (
-                                                <span
-                                                    key={`ellipsis-${index}`}
-                                                    className="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700"
-                                                >
-                                                    {page}
-                                                </span>
-                                            )
-                                        ))}
-                                    </div>
-
-                                    {/* Indicador móvil simple */}
-                                    <div className="md:hidden flex items-center px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700">
-                                        {pagination.currentPage} / {pagination.totalPages}
-                                    </div>
-
-                                    {/* Botón Siguiente */}
-                                    <button
-                                        onClick={() => handlePageChange(pagination.currentPage + 1)}
-                                        disabled={pagination.currentPage === pagination.totalPages}
-                                        className={`flex items-center px-4 py-2 rounded-r-lg border ${pagination.currentPage === pagination.totalPages
-                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
-                                            }`}
-                                    >
-                                        Siguiente
-                                        <FiChevronRight className="ml-2" />
-                                    </button>
+                                {/* Indicador de página y páginas numéricas */}
+                                <div className="hidden md:flex">
+                                    {getPageNumbers().map((page, index) => (
+                                        typeof page === 'number' ? (
+                                            <button
+                                                key={`page-${page}`}
+                                                onClick={() => handlePageChange(page)}
+                                                className={`px-4 py-2 border-t border-b ${pagination.currentPage === page
+                                                    ? 'bg-blue-500 text-white'
+                                                    : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                                                    }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ) : (
+                                            <span
+                                                key={`ellipsis-${index}`}
+                                                className="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700"
+                                            >
+                                                {page}
+                                            </span>
+                                        )
+                                    ))}
                                 </div>
-                            )}
+
+                                {/* Indicador móvil simple */}
+                                <div className="md:hidden flex items-center px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700">
+                                    {pagination.currentPage} / {pagination.totalPages}
+                                </div>
+
+                                {/* Botón Siguiente */}
+                                <button
+                                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                                    disabled={pagination.currentPage === pagination.totalPages}
+                                    className={`flex items-center px-4 py-2 rounded-r-lg border ${pagination.currentPage === pagination.totalPages
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-300'
+                                        }`}
+                                >
+                                    Siguiente
+                                    <FiChevronRight className="ml-2" />
+                                </button>
+                            </div>
+
+                            {/* Controles de paginación simplificados
+                            {pagination && pagination.totalPages > 1 && (
+
+                            )} */}
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center py-12">
