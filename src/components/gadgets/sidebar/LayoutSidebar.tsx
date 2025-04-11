@@ -6,14 +6,12 @@ import React from 'react';
 import {
     FiFileText,
     FiUsers,
-    FiTool,
     FiX,
     FiLogOut,
     FiMenu,
     FiCopy,
     FiChevronLeft
 } from 'react-icons/fi';
-import { GrBook } from 'react-icons/gr';
 import { LiaFileInvoiceDollarSolid } from 'react-icons/lia';
 import { TbHistory } from 'react-icons/tb';
 
@@ -85,12 +83,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                             onClick={() => selectOption('comprobantes')}
                         />
                         <SidebarItem
-                            icon={<GrBook size={20} />}
-                            text="Documentacion"
-                            isActive={activePage === 'manual'}
-                            onClick={() => selectOption('manual')}
-                        />
-                        <SidebarItem
                             icon={<TbHistory size={20} />}
                             text="Soporte"
                             isActive={activePage === 'soporte'}
@@ -157,11 +149,6 @@ const SidebarLayout: React.FC<SidebarLayoutProps> = ({ children }) => {
                             icon={<LiaFileInvoiceDollarSolid size={20} />}
                             isActive={activePage === 'comprobantes'}
                             onClick={() => selectOption('comprobantes')}
-                        />
-                        <IconSidebarItem
-                            icon={<GrBook size={20} />}
-                            isActive={activePage === 'manual'}
-                            onClick={() => selectOption('manual')}
                         />
                         <IconSidebarItem
                             icon={<TbHistory size={20} />}

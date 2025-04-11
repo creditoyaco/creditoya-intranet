@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useAuth } from "@/context/useAuth";
 import { ScalarClient } from "@/types/client";
@@ -19,6 +19,7 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
     const [clientData, setClientData] = useState<ScalarClient | null>(null);
     const [clientId, setClientId] = useState<string | null>(null);
 
+    // Resolver el parámetro de cliente (client_id)
     useEffect(() => {
         const resolveParams = async () => {
             if (params) {
@@ -34,10 +35,10 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
         resolveParams();
     }, [params]);
 
+    // Obtener la información del cliente (detalles)
     useEffect(() => {
         const getInfoClient = async () => {
             if (!clientId || !accessToken) return;
-
             try {
                 const response = await axios.get(
                     `/api/dash/clients?client_id=${clientId}`,
@@ -57,10 +58,10 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
                 setLoading(false);
             }
         };
-
         getInfoClient();
     }, [clientId, accessToken]);
 
+    // Obtener la lista de usuarios (clientes), enviando searchQuery para filtrar en el endpoint
     useEffect(() => {
         const fetchUsers = async () => {
             if (!accessToken) {
@@ -71,10 +72,11 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
 
             setLoading(true);
             setError(null);
-
             try {
+                // Se agrega el parámetro "search" si está definido
+                const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : "";
                 const response = await axios.get(
-                    `/api/dash/clients?page=${currentPage}&pageSize=${usersPerPage}`,
+                    `/api/dash/clients?page=${currentPage}&pageSize=${usersPerPage}${searchParam}`,
                     {
                         headers: { Authorization: `Bearer ${accessToken}` },
                         timeout: 15000
@@ -83,7 +85,7 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
 
                 if (response.data.success) {
                     const userData = response.data.data;
-
+                    // Suponiendo que el endpoint devuelva un objeto con "users" y "totalCount"
                     if (userData.users && userData.totalCount !== undefined) {
                         setUsers(userData.users);
                         setTotalPages(Math.ceil(userData.totalCount / usersPerPage));
@@ -94,7 +96,7 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
                     setError(response.data.error || "Error al cargar los usuarios.");
                 }
             } catch (err: any) {
-                if (err.code === 'ECONNABORTED') {
+                if (err.code === "ECONNABORTED") {
                     setError("La solicitud ha tardado demasiado tiempo. Por favor, inténtalo de nuevo.");
                 } else {
                     setError(err.response?.data?.error || err.message || "Error al conectar con el servidor.");
@@ -105,7 +107,7 @@ function useClient({ params }: { params: Promise<{ client_id: string }> | null }
         };
 
         fetchUsers();
-    }, [currentPage, accessToken]);
+    }, [currentPage, accessToken, searchQuery]);
 
     const nextPage = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);

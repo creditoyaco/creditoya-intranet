@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const status: Status = searchParams.get('status') as Status;
     const page = Number(searchParams.get('page')) || 1;
     const pageSize = Number(searchParams.get('pageSize')) || 10;
+    // Si se pasa search, este valor se utilizará para filtrar localmente
     const searchQuery = searchParams.get('search') || undefined;
 
     try {
@@ -75,11 +76,17 @@ export async function GET(request: Request) {
         }
 
         // Transform data to match expected frontend format
-        const transformedData = Array.isArray(responseData.data) 
+        let transformedData = Array.isArray(responseData.data) 
             ? responseData.data.map(transformLoanData)
             : [];
 
-        const total = responseData.total || transformedData.length;
+        // Si se suministra searchQuery, filtrar la data localmente
+        if (searchQuery) {
+            transformedData = filterLoanData(transformedData, searchQuery);
+        }
+
+        // Actualizar el total y calcular totalPages basado en el array filtrado
+        const total = transformedData.length;
         const totalPages = Math.ceil(total / pageSize);
 
         // Build successful response
@@ -136,4 +143,20 @@ function transformLoanData(item: any) {
             entity: item.entity
         }
     };
+}
+
+// Helper function to filter loans based on a search text.
+// Filtra por número de documento, nombre completo y ID de la solicitud.
+function filterLoanData(loans: any[], query: string): any[] {
+    const lowercaseQuery = query.trim().toLowerCase();
+    
+    return loans.filter(item => {
+        const docNumber = item.document.number.toLowerCase();
+        const fullName = `${item.user.names} ${item.user.firstLastName} ${item.user.secondLastName}`.toLowerCase();
+        const loanId = item.loanApplication.id.toLowerCase();
+
+        return docNumber.includes(lowercaseQuery) ||
+               fullName.includes(lowercaseQuery) ||
+               loanId.includes(lowercaseQuery);
+    });
 }

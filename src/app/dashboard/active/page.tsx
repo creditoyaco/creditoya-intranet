@@ -1,9 +1,18 @@
-"use client"
+"use client";
 
 import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
 import { handleKeyToCompany } from "@/handlers/keyToCompany";
 import useActives from "@/hooks/dashboard/useActives";
-import { FiSearch, FiUser, FiDollarSign, FiCalendar, FiFileText, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+    FiSearch,
+    FiUser,
+    FiDollarSign,
+    FiCalendar,
+    FiFileText,
+    FiChevronLeft,
+    FiChevronRight,
+    FiX
+} from "react-icons/fi";
 
 function ActiveSection() {
     const {
@@ -11,13 +20,15 @@ function ActiveSection() {
         setActiveTab,
         searchQuery,
         handleSearchChange,
+        clearSearch,
         isLoading,
         error,
         loanData,
         formatCurrency,
         formatDate,
         pagination,
-        handlePageChange
+        handlePageChange,
+        UpdateIndicator
     } = useActives();
 
     return (
@@ -25,21 +36,28 @@ function ActiveSection() {
             <div className="pt-20 p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen overflow-scroll">
                 <header className="mb-8">
                     <h1 className="text-xl sm:text-2xl font-medium text-gray-800">
-                        {activeTab === 'aprobados' ? 'Solicitudes Aprobadas' :
-                            activeTab === 'aplazados' ? 'Solicitudes Aplazadas' :
-                                'Solicitudes con Ajuste de Monto'}
+                        {activeTab === 'aprobados'
+                            ? 'Solicitudes Aprobadas'
+                            : activeTab === 'aplazados'
+                                ? 'Solicitudes Aplazadas'
+                                : 'Solicitudes con Ajuste de Monto'}
                     </h1>
-                    <p className="text-gray-500 text-sm mt-1">Gestiona las solicitudes según su estado</p>
+                    <p className="text-gray-500 text-sm mt-1">
+                        Gestiona las solicitudes según su estado
+                    </p>
                 </header>
 
                 {/* Tab navigation */}
-                <div className="flex justify-end">
-                    <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center">
+                        <UpdateIndicator />
+                    </div>
+                    <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => setActiveTab('aprobados')}
                             className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'aprobados'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Aprobados
@@ -48,8 +66,8 @@ function ActiveSection() {
                         <button
                             onClick={() => setActiveTab('aplazados')}
                             className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'aplazados'
-                                ? 'bg-red-500 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-red-500 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Aplazados
@@ -58,8 +76,8 @@ function ActiveSection() {
                         <button
                             onClick={() => setActiveTab('cambio')}
                             className={`text-sm px-5 py-2.5 rounded-lg font-medium transition-colors ${activeTab === 'cambio'
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             Ajuste
@@ -74,11 +92,22 @@ function ActiveSection() {
                     </div>
                     <input
                         type="text"
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Busca por Numero de documento / Nombre completo / ID solicitud"
                         value={searchQuery}
                         onChange={handleSearchChange}
                     />
+                    {searchQuery && (
+                        <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <button
+                                onClick={clearSearch}
+                                className="text-gray-400 hover:text-gray-600"
+                                aria-label="Limpiar búsqueda"
+                            >
+                                <FiX className="h-5 w-5" />
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Content area */}
@@ -90,8 +119,19 @@ function ActiveSection() {
                     ) : error ? (
                         <div className="flex flex-col items-center justify-center py-12">
                             <div className="text-red-500 mb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-16 w-16 opacity-40"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={1.5}
+                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
                                 </svg>
                             </div>
                             <p className="text-gray-500 font-medium text-center">{error}</p>
@@ -134,10 +174,14 @@ function ActiveSection() {
 
                                             <div className="flex items-center">
                                                 <span className="text-sm mr-2">{handleKeyToCompany(item.user.currentCompanie)}</span>
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium
-                                                        ${item.loanApplication.status === 'Aprobado' ? 'bg-green-100 text-green-800' :
-                                                        item.loanApplication.status === 'Aplazado' ? 'bg-red-100 text-red-800' :
-                                                            'bg-yellow-100 text-yellow-800'}`}>
+                                                <span
+                                                    className={`px-3 py-1 rounded-full text-xs font-medium ${item.loanApplication.status === 'Aprobado'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : item.loanApplication.status === 'Aplazado'
+                                                                ? 'bg-red-100 text-red-800'
+                                                                : 'bg-yellow-100 text-yellow-800'
+                                                        }`}
+                                                >
                                                     {item.loanApplication.status}
                                                 </span>
                                             </div>
@@ -203,16 +247,20 @@ function ActiveSection() {
                                     />
                                 </svg>
                             </div>
-                            <p className="text-gray-500 font-medium text-center">No hay solicitudes en este estado</p>
+                            <p className="text-gray-500 font-medium text-center">
+                                No hay solicitudes en este estado
+                            </p>
                             <p className="text-gray-400 text-sm text-center mt-1">
-                                {searchQuery ? 'No se encontraron resultados para tu búsqueda' : 'Las solicitudes aparecerán aquí cuando estén disponibles'}
+                                {searchQuery
+                                    ? 'No se encontraron resultados para tu búsqueda'
+                                    : 'Las solicitudes aparecerán aquí cuando estén disponibles'}
                             </p>
                         </div>
                     )}
                 </div>
             </div>
         </SidebarLayout>
-    )
+    );
 }
 
 export default ActiveSection;

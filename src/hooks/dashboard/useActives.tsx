@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
@@ -30,7 +30,7 @@ interface LoanApplication {
     entity: string;
 }
 
-interface LoanData {
+export interface LoanData {
     user: User;
     document: Document;
     loanApplication: LoanApplication;
@@ -46,8 +46,12 @@ interface ApiResponse {
 }
 
 function useActives() {
+    // Estado "real" usado para la consulta en el servidor
+    const [searchTerm, setSearchTerm] = useState('');
+    // Estado visual del input
+    const [inputValue, setInputValue] = useState('');
+
     const [activeTab, setActiveTab] = useState<'aprobados' | 'aplazados' | 'cambio'>('aprobados');
-    const [searchQuery, setSearchQuery] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [loanData, setLoanData] = useState<LoanData[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -60,8 +64,16 @@ function useActives() {
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [updateInterval, setUpdateInterval] = useState<NodeJS.Timeout | null>(null);
 
-    // Fetch data with search and pagination
-    const fetchData = useCallback(async (page = 1, search = searchQuery) => {
+    // Función debounced para actualizar el searchTerm
+    const debouncedSetSearchTerm = useCallback(
+        debounce((value: string) => {
+            setSearchTerm(value);
+        }, 500),
+        []
+    );
+
+    // Función para hacer fetch a la API (ya se aplica filtrado en el endpoint)
+    const fetchData = useCallback(async (page = 1, search = '') => {
         setIsLoading(true);
         setError(null);
 
@@ -81,14 +93,12 @@ function useActives() {
                     statusParam = "Aprobado";
             }
 
-            // Build query params
             const params = new URLSearchParams({
                 status: statusParam,
                 page: page.toString(),
                 pageSize: pagination.pageSize.toString()
             });
 
-            // Add search param if it exists
             if (search) {
                 params.append('search', search);
             }
@@ -97,9 +107,9 @@ function useActives() {
             const response = await axios.get<ApiResponse>(`/api/dash/status?${params.toString()}`);
 
             if (response.data.success && Array.isArray(response.data.data)) {
-                setLoanData(response.data.data);
+                const responseData = response.data.data;
+                setLoanData(responseData);
 
-                // Update pagination state
                 setPagination({
                     currentPage: response.data.page || page,
                     pageSize: response.data.pageSize || pagination.pageSize,
@@ -107,7 +117,6 @@ function useActives() {
                     totalPages: response.data.totalPages || 1
                 });
 
-                // Actualizar el timestamp de última actualización
                 setLastUpdated(new Date());
             } else {
                 console.warn("No data returned or invalid format:", response.data);
@@ -121,60 +130,67 @@ function useActives() {
         } finally {
             setIsLoading(false);
         }
-    }, [activeTab, pagination.pageSize, searchQuery]);
+    }, [activeTab, pagination.pageSize]);
 
-    // Handle tab change
+    // Actualizar el searchTerm con debouncing cuando cambia el valor del input
     useEffect(() => {
-        setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to page 1 when changing tabs
+        debouncedSetSearchTerm(inputValue);
+    }, [inputValue, debouncedSetSearchTerm]);
+
+    // Buscar en el servidor cuando el searchTerm cambia
+    useEffect(() => {
+        // Solo se hace fetch si el searchTerm está vacío o tiene más de 3 caracteres
+        if (searchTerm === '' || searchTerm.length > 3) {
+            fetchData(1, searchTerm);
+        }
+    }, [searchTerm, fetchData]);
+
+    // Manejo del cambio de pestaña: se reinician los estados de búsqueda
+    useEffect(() => {
+        setPagination(prev => ({ ...prev, currentPage: 1 }));
+        setInputValue('');
+        setSearchTerm('');
         fetchData(1);
     }, [activeTab, fetchData]);
 
-    // Configurar el intervalo para actualizar el tiempo
+    // Configurar intervalo para actualizar el tiempo
     useEffect(() => {
-        // Limpiar cualquier intervalo anterior
         if (updateInterval) {
             clearInterval(updateInterval);
         }
 
-        // Crear un nuevo intervalo que actualice cada minuto
         const interval = setInterval(() => {
-            // Forzar una actualización del componente
             setLastUpdated(prev => new Date(prev.getTime()));
-        }, 60000); // Actualizar cada minuto
+        }, 60000);
 
         setUpdateInterval(interval);
 
-        // Limpiar el intervalo cuando el componente se desmonte
         return () => {
             if (interval) clearInterval(interval);
         };
     }, []);
 
-    // Debounced search handler
-    const debouncedSearch = useCallback(
-        debounce((query: string) => {
-            setPagination(prev => ({ ...prev, currentPage: 1 })); // Reset to page 1 when searching
-            fetchData(1, query);
-        }, 500),
-        [fetchData]
-    );
-
-    // Handle search input changes
+    // Manejo del input de búsqueda
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-        debouncedSearch(query);
+        setInputValue(e.target.value);
     };
 
-    // Handle pagination
+    // Limpiar búsqueda
+    const clearSearch = () => {
+        setInputValue('');
+        setSearchTerm('');
+        fetchData(1);
+    };
+
+    // Manejo de paginación
     const handlePageChange = (newPage: number) => {
         if (newPage > 0 && newPage <= pagination.totalPages) {
             setPagination(prev => ({ ...prev, currentPage: newPage }));
-            fetchData(newPage);
+            fetchData(newPage, searchTerm);
         }
     };
 
-    // Format date
+    // Formatear fecha
     const formatDate = (dateString: string) => {
         if (!dateString) return "Fecha no disponible";
         try {
@@ -189,7 +205,7 @@ function useActives() {
         }
     };
 
-    // Format currency
+    // Formatear moneda
     const formatCurrency = (value: string) => {
         if (!value) return "$0";
         try {
@@ -205,7 +221,7 @@ function useActives() {
         }
     };
 
-    // Función para formatear el tiempo transcurrido desde la última actualización
+    // Formatear tiempo transcurrido desde la última actualización
     const getTimeSinceUpdate = () => {
         const now = new Date();
         const diffMs = now.getTime() - lastUpdated.getTime();
@@ -216,9 +232,9 @@ function useActives() {
         return `Actualizado hace ${diffMins} minutos`;
     };
 
-    // Función para manejar la recarga manual
+    // Manejar recarga manual
     const handleManualRefresh = () => {
-        fetchData(pagination.currentPage);
+        fetchData(pagination.currentPage, searchTerm);
     };
 
     // Componente de indicador de actualización
@@ -238,14 +254,15 @@ function useActives() {
 
     return {
         activeTab,
-        searchQuery,
+        // Se expone inputValue como searchQuery para compatibilidad con el componente
+        searchQuery: inputValue,
         isLoading,
         loanData,
         error,
         pagination,
         fetchData,
-        debouncedSearch,
         handleSearchChange,
+        clearSearch,
         handlePageChange,
         formatDate,
         formatCurrency,

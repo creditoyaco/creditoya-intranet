@@ -8,8 +8,7 @@ export type optionTypes =
     "prestamos" |
     "clientes" |
     "soporte" |
-    "comprobantes" |
-    "manual";
+    "comprobantes"
 
 export interface SidebarLayoutProps {
     children: React.ReactNode;
@@ -107,8 +106,6 @@ function useSideBar() {
             router.push("/dashboard/soporte");
         } else if (option === "comprobantes") {
             router.push("/dashboard/comprobantes");
-        } else if (option === "manual") {
-            router.push("/dashboard/manual");
         }
     }
 
