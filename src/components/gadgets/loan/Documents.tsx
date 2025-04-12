@@ -1,4 +1,5 @@
 import { IoMdDocument, IoMdDownload, IoMdEye } from "react-icons/io";
+import { MdBlock } from "react-icons/md";
 
 type Document = {
     name: string;
@@ -19,7 +20,7 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ documents, setSele
     return (
         <div className="mt-8">
             <h2 className="text-lg font-medium text-gray-700 mb-4">Documentos Adjuntos</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
                 {documents.map((doc, index) => (
                     <DocumentCard
                         key={index}
@@ -34,7 +35,7 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({ documents, setSele
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({ document, setSelectedDocument }) => {
     return (
-        <div className="border border-gray-100 bg-white hover:bg-gray-50 rounded-lg p-4 flex flex-col items-center justify-between h-52 transition-all shadow-sm hover:shadow">
+        <div className="border border-gray-100 bg-white hover:bg-gray-50 rounded-lg p-4 flex flex-col items-center justify-between h-44 transition-all shadow-sm hover:shadow">
             {/* Icono y nombre */}
             <div className="flex flex-col items-center space-y-2 w-full">
                 <div className="bg-gray-50 rounded-full p-3">
@@ -65,6 +66,13 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({ document, setSelecte
                         <IoMdDownload className="text-green-600" />
                         <span>Descargar</span>
                     </a>
+                    <button
+                        className="flex-1 py-2 px-3 bg-red-50 text-red-700 rounded hover:bg-red-100 transition flex items-center justify-center gap-1 text-sm"
+                        onClick={() => alert("Funcionalidad en mantenimiento...")}
+                    >
+                        <MdBlock className="text-red-600" />
+                        <span>Rechazar</span>
+                    </button>
                 </div>
             )}
         </div>

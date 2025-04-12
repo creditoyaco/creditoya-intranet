@@ -20,7 +20,7 @@ function ErrorsAppsPage() {
                 <div className="flex justify-between items-center mb-6">
                     <div
                         className="flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 transition-colors px-4 py-2 rounded-md cursor-pointer"
-                        onClick={() => alert("Funcionalidad para crear un nuevo reporte")}
+                        onClick={() => alert("BlockScrum en mantenimiento, pronto estaremos de regreso...")}
                     >
                         <IoBugOutline className="text-indigo-600" />
                         <span className="text-sm text-indigo-700 font-medium">Nuevo reporte</span>
