@@ -4,15 +4,8 @@ import SidebarLayout from "@/components/gadgets/sidebar/LayoutSidebar";
 import useProof from "@/hooks/dashboard/useProof";
 import { ScalarClient } from "@/types/client";
 import { ScalarLoanApplication } from "@/types/loan";
-import { useEffect, useState } from "react";
 import { FaEnvelope, FaFileAlt, FaPhone, FaUserAlt } from "react-icons/fa";
 import { IoReload } from "react-icons/io5";
-
-// Define the GeneratedDocument type
-type GeneratedDocument = {
-    id: string;
-    publicUrl: string;
-};
 
 // Define the BatchGenerationDetail type
 type BatchGenerationDetail = {
@@ -25,65 +18,26 @@ function ComprobantesPage() {
     const {
         loading,
         error,
-        approvedLoans,
         formatDate,
         getFullName,
-        allDocuments,
         pendingDocumentsLoans,
-        fetchPendingDocumentsLoans,
-        generateAllPendingDocuments,
         batchGenerationStatus,
-        downloadDocumentById
+        downloadDocumentById,
+        eligibleDocuments,
+        paginatedDocuments,
+        selectedDocuments,
+        expandedResults,
+        toggleDocumentSelection,
+        handleDownloadSelected,
+        handlePageChange,
+        currentPage,
+        itemsPerPage,
+        handleRefresh,
+        handleGenerateAll,
+        setExpandedResults,
+        isDownloaded,
+        handleToggleDownload
     } = useProof();
-
-    const [expandedResults, setExpandedResults] = useState(false);
-    const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]); // IDs de documentos seleccionados
-    const [currentPage, setCurrentPage] = useState(1); // Página actual
-    const itemsPerPage = 10; // Número de elementos por página
-
-    // Filtrar documentos con downloadCount === 0
-    const eligibleDocuments = allDocuments.filter((doc) => doc.downloadCount === 0);
-
-    // Cargar los préstamos pendientes al montar el componente
-    useEffect(() => {
-        fetchPendingDocumentsLoans();
-    }, []);
-
-    const handleRefresh = () => {
-        fetchPendingDocumentsLoans();
-    };
-
-    const handleGenerateAll = async () => {
-        await generateAllPendingDocuments();
-    };
-
-    // Manejo de la selección/deselección de documentos
-    const toggleDocumentSelection = (documentId: string) => {
-        if (selectedDocuments.includes(documentId)) {
-            setSelectedDocuments(selectedDocuments.filter((id) => id !== documentId));
-        } else {
-            setSelectedDocuments([...selectedDocuments, documentId]);
-        }
-    };
-
-    // Descargar todos los documentos seleccionados
-    const handleDownloadSelected = async () => {
-        for (const documentId of selectedDocuments) {
-            await downloadDocumentById(documentId);
-        }
-        setSelectedDocuments([]); // Limpiar selección después de la descarga
-    };
-
-    // Paginación: Calcular los documentos a mostrar en la página actual
-    const paginatedDocuments = eligibleDocuments.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    );
-
-    // Cambiar de página
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
 
     return (
         <SidebarLayout>
@@ -99,10 +53,15 @@ function ComprobantesPage() {
 
                 {/* Sección para Descargar ZIP */}
                 <div className="bg-white rounded-lg shadow p-4 mb-6">
-                    <h2 className="font-medium text-gray-700 text-lg mb-4">
-                        Documentos Generados Disponibles para Descargar
-                    </h2>
-                    {eligibleDocuments.length === 0 ? (
+                    <div className="flex flex-row justify-between mb-5">
+                        <h2 className="font-medium text-gray-700 text-lg mb-4">
+                            Documentos Generados Disponibles para Descargar
+                        </h2>
+
+                        <p onClick={handleToggleDownload} className="grid place-content-center text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-md text-gray-600">Descargar todos</p>
+                    </div>
+
+                    {isDownloaded == false && eligibleDocuments.length === 0 ? (
                         <p className="text-gray-500">No hay documentos generados disponibles.</p>
                     ) : (
                         <>
@@ -134,8 +93,8 @@ function ComprobantesPage() {
                                                 onClick={() => downloadDocumentById(docWithLoan.document.id)}
                                                 disabled={docWithLoan.downloadCount !== 0} // Deshabilitar si downloadCount > 0
                                                 className={`px-3 py-1 text-sm rounded ${docWithLoan.downloadCount === 0
-                                                        ? "bg-blue-600 text-white hover:bg-blue-700"
-                                                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                                     }`}
                                             >
                                                 Descargar ZIP
@@ -179,6 +138,10 @@ function ComprobantesPage() {
                             </div>
                         </>
                     )}
+
+                    { isDownloaded == true && (
+                        <div>hola</div>
+                    ) }
                 </div>
 
                 {/* Stats and Action Panel */}

@@ -56,6 +56,56 @@ function useProof() {
     inProgress: false,
     results: null
   });
+  const [expandedResults, setExpandedResults] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]); // IDs de documentos seleccionados
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
+  const itemsPerPage = 10; // Número de elementos por página
+
+  const [isDownloaded, setIsDownloaded] = useState(false);
+
+  const handleToggleDownload = async () => {
+    setIsDownloaded(true); // Update state to indicate download in progress
+
+    try {
+      // Use the allDocuments array to download each document
+      for (const doc of allDocuments) {
+        await downloadDocumentById(doc.document.id);
+      }
+
+      // Refresh the document lists after downloads
+      await fetchAllDocuments();
+      await fetchDownloadedDocuments();
+      await fetchNeverDownloadedDocuments();
+
+      // Reset download state when complete
+      setIsDownloaded(false);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error al descargar los documentos');
+      }
+      setIsDownloaded(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLoans(selectedStatus);
+  }, [selectedStatus]);
+
+  // Initial data loading
+  useEffect(() => {
+    const loadInitialData = async () => {
+      await fetchAllDocuments();
+      await fetchDownloadedDocuments();
+      await fetchNeverDownloadedDocuments();
+    };
+
+    loadInitialData();
+  }, []);
+
+  // Cargar los préstamos pendientes al montar el componente
+  useEffect(() => {
+    fetchPendingDocumentsLoans();
+  }, []);
 
   const fetchLoans = async (status: Status) => {
     try {
@@ -288,20 +338,44 @@ function useProof() {
     return `${user.names} ${user.firstLastName} ${user.secondLastName || ''}`.trim();
   };
 
-  useEffect(() => {
-    fetchLoans(selectedStatus);
-  }, [selectedStatus]);
+  // Filtrar documentos con downloadCount === 0
+  const eligibleDocuments = allDocuments.filter((doc) => doc.downloadCount === 0);
 
-  // Initial data loading
-  useEffect(() => {
-    const loadInitialData = async () => {
-      await fetchAllDocuments();
-      await fetchDownloadedDocuments();
-      await fetchNeverDownloadedDocuments();
-    };
+  const handleRefresh = () => {
+    fetchPendingDocumentsLoans();
+  };
 
-    loadInitialData();
-  }, []);
+  const handleGenerateAll = async () => {
+    await generateAllPendingDocuments();
+  };
+
+  // Manejo de la selección/deselección de documentos
+  const toggleDocumentSelection = (documentId: string) => {
+    if (selectedDocuments.includes(documentId)) {
+      setSelectedDocuments(selectedDocuments.filter((id) => id !== documentId));
+    } else {
+      setSelectedDocuments([...selectedDocuments, documentId]);
+    }
+  };
+
+  // Descargar todos los documentos seleccionados
+  const handleDownloadSelected = async () => {
+    for (const documentId of selectedDocuments) {
+      await downloadDocumentById(documentId);
+    }
+    setSelectedDocuments([]); // Limpiar selección después de la descarga
+  };
+
+  // Paginación: Calcular los documentos a mostrar en la página actual
+  const paginatedDocuments = eligibleDocuments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Cambiar de página
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return {
     loading,
@@ -315,6 +389,15 @@ function useProof() {
     allDocuments,
     downloadedDocuments,
     neverDownloadedDocuments,
+    eligibleDocuments,
+    selectedDocuments,
+    currentPage,
+    itemsPerPage,
+    paginatedDocuments,
+    expandedResults,
+    isDownloaded,
+    handleToggleDownload,
+    setExpandedResults,
     toggleStatus,
     fetchPendingDocumentsLoans,
     fetchLoanDocuments,
@@ -323,11 +406,15 @@ function useProof() {
     formatDate,
     getFullName,
     generateAllPendingDocuments,
-    // New methods
     fetchAllDocuments,
     fetchDownloadedDocuments,
     fetchNeverDownloadedDocuments,
     downloadDocumentById,
+    handleRefresh,
+    handleGenerateAll,
+    toggleDocumentSelection,
+    handleDownloadSelected,
+    handlePageChange,
   };
 }
 
